@@ -4,7 +4,12 @@ library(ggplot2)
 
 source("functions.R")
 
+tar.path <<- "tar"
 folder.path <<- "data"
+
+# extract tar file on startup
+unTar(tar.path, folder.path)
+
 
 dataset <<- readData(paste(folder.path, list.dirs(path = folder.path, full.names = FALSE, recursive = FALSE)[2], sep="/")) 
 
@@ -29,7 +34,7 @@ shinyUI(
                         condition="input.tsp=='map'",
                         helpText("If you want to use the results of a previous eden run, select the analysis here"), 
                      
-                        selectInput("dataset", "Import a previous eden run", choices= list.dirs(path = "data", full.names = FALSE, recursive = FALSE), selected=list.dirs(path = "data", full.names = FALSE, recursive = FALSE)[2], multiple=F, width="100%"),
+                        selectInput("dataset", "Import a previous eden run", choices= list.dirs(path = "data", full.names = FALSE, recursive = FALSE), selected=list.dirs(path = "csv", full.names = FALSE, recursive = FALSE)[2], multiple=F, width="100%"),
                          helpText("The selection of the dataset and p-value threshold will filter the data for all Panels. Try it out and select also the sample obese_m and obese_f"),
                         
                         uiOutput('filters_UI'),
