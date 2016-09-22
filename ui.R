@@ -7,6 +7,9 @@ source("functions.R")
 tar.path <<- "tar"
 folder.path <<- "data"
 
+dir.create(folder.path)
+dir.create("tmp")
+
 # extract tar file on startup
 unTar(tar.path, folder.path)
 
