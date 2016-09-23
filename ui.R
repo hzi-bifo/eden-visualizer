@@ -1,6 +1,7 @@
+packrat::on()
 library(shiny)
 library(ggplot2)
-#options(warn=0)
+options(warn=0)
 
 source("functions.R")
 

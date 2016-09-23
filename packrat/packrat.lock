@@ -1,0 +1,164 @@
+PackratFormat: 1.4
+PackratVersion: 0.4.7.22
+RVersion: 3.2.0
+Repos: BioCsoft=http://bioconductor.org/packages/3.1/bioc,
+    BioCann=http://bioconductor.org/packages/3.1/data/annotation,
+    BioCexp=http://bioconductor.org/packages/3.1/data/experiment,
+    BioCextra=http://bioconductor.org/packages/3.1/extra,
+    CRAN=https://cran.rstudio.com/
+
+Package: DT
+Source: CRAN
+Version: 0.2
+Hash: 36b032203797956fedad5a25055016a9
+Requires: htmltools, htmlwidgets, magrittr
+
+Package: MASS
+Source: CRAN
+Version: 7.3-45
+Hash: 0650d5701aa7e369e77c9e2c8e1dc913
+
+Package: R6
+Source: CRAN
+Version: 2.1.2
+Hash: c515e41c73294952cbb33ee1c1be5a2d
+
+Package: RColorBrewer
+Source: CRAN
+Version: 1.1-2
+Hash: c0d56cd15034f395874c870141870c25
+
+Package: Rcpp
+Source: CRAN
+Version: 0.12.4
+Hash: 115167d29098a4fd1e572fdbef809438
+
+Package: colorspace
+Source: CRAN
+Version: 1.2-6
+Hash: 00bb12245cd975c450cc4a960884fa15
+
+Package: dichromat
+Source: CRAN
+Version: 2.0-0
+Hash: 08eed0c80510af29bb15f840ccfe37ce
+
+Package: digest
+Source: CRAN
+Version: 0.6.10
+Hash: 87165608ca8aeb0958835c3c5b52b6b7
+
+Package: ggplot2
+Source: CRAN
+Version: 2.1.0
+Hash: 50e297b0191179c39c7dcae0eff72b51
+Requires: MASS, digest, gtable, plyr, reshape2, scales
+
+Package: gtable
+Source: CRAN
+Version: 0.2.0
+Hash: cd78381a9d3fea966ac39bd0daaf5554
+
+Package: htmltools
+Source: CRAN
+Version: 0.3.5
+Hash: 56b2a44852ab64c3dd8ef05f725b0079
+Requires: Rcpp, digest
+
+Package: htmlwidgets
+Source: CRAN
+Version: 0.7
+Hash: f60506850a2d752dff69fc2a31c5a339
+Requires: htmltools, jsonlite, yaml
+
+Package: httpuv
+Source: CRAN
+Version: 1.3.3
+Hash: 9c0fcc725400dab7f86c247bf3fc9d0f
+Requires: Rcpp
+
+Package: jsonlite
+Source: CRAN
+Version: 1.0
+Hash: f32817e181c39ede83fdd3e699348b69
+
+Package: labeling
+Source: CRAN
+Version: 0.3
+Hash: ecf589b42cd284b03a4beb9665482d3e
+
+Package: magrittr
+Source: CRAN
+Version: 1.5
+Hash: bdc4d48c3135e8f3b399536ddf160df4
+
+Package: mime
+Source: CRAN
+Version: 0.5
+Hash: 463550cf44fb6f0a2359368f42eebe62
+
+Package: munsell
+Source: CRAN
+Version: 0.4.3
+Hash: f96d896947fcaf9b6d0074002e9f4f9d
+Requires: colorspace
+
+Package: packrat
+Source: github
+Version: 0.4.7-22
+Hash: 27885f88c754dcfd57dd648a0f354e44
+GithubRepo: packrat
+GithubUsername: rstudio
+GithubRef: master
+GithubSha1: 580f485252dc0e91ebfb31401af890d1c1872af1
+
+Package: pander
+Source: CRAN
+Version: 0.6.0
+Hash: 663213ea3f071a844ec5016a0cddeb50
+Requires: Rcpp, digest
+
+Package: plyr
+Source: CRAN
+Version: 1.8.4
+Hash: 96866957d40732d935f717727d5c80ba
+Requires: Rcpp
+
+Package: reshape2
+Source: CRAN
+Version: 1.4.1
+Hash: bda269da8b147b0beea2c0e16bdce20d
+Requires: Rcpp, plyr, stringr
+
+Package: scales
+Source: CRAN
+Version: 0.4.0
+Hash: 53844c573fd30a70f592fa45ec1e33a1
+Requires: RColorBrewer, Rcpp, dichromat, labeling, munsell, plyr
+
+Package: shiny
+Source: CRAN
+Version: 0.13.2
+Hash: 28d6903a44dc53bd4823fa43ccdc08e5
+Requires: R6, digest, htmltools, httpuv, jsonlite, mime, xtable
+
+Package: stringi
+Source: CRAN
+Version: 1.1.1
+Hash: 48f2afc5dfecb65ba32a87d38b3533ff
+
+Package: stringr
+Source: CRAN
+Version: 1.0.0
+Hash: 2676dd5f88890910962b733b0f9540e1
+Requires: magrittr, stringi
+
+Package: xtable
+Source: CRAN
+Version: 1.8-2
+Hash: 7293235cfcc14cdff1ce7fd1a0212031
+
+Package: yaml
+Source: CRAN
+Version: 2.1.13
+Hash: 4854ccabebc225e8a7309fb4a74980de
