@@ -1,13 +1,13 @@
-packrat::on()
 library(shiny)
 library(ggplot2)
-options(warn=0)
+#options(warn=0)
 
 source("functions.R")
 
 # check if this applications runs inside the docker container
 if(file.exists("/home/eden/eden.sh")){
   # we are inside the docker container
+  packrat::on()
   tar.path <<- "/home/eden/data/tar"
   folder.path <<- "data"
   dir.create(folder.path)
@@ -16,7 +16,7 @@ if(file.exists("/home/eden/eden.sh")){
   folder.path <<- "data"
   tar.path <<- "examples"
   dir.create("tmp")
-  
+  dir.create(folder.path)
 }
 
 # extract tar file on startup
