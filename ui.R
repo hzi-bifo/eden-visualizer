@@ -5,15 +5,22 @@ options(warn=0)
 
 source("functions.R")
 
-tar.path <<- "tar"
-folder.path <<- "data"
-
-dir.create(folder.path)
-dir.create("tmp")
+# check if this applications runs inside the docker container
+if(file.exists("/home/eden/eden.sh")){
+  # we are inside the docker container
+  tar.path <<- "/home/eden/data/tar"
+  folder.path <<- "data"
+  dir.create(folder.path)
+} else {
+  # we are online hosted
+  folder.path <<- "data"
+  tar.path <<- "examples"
+  dir.create("tmp")
+  
+}
 
 # extract tar file on startup
 unTar(tar.path, folder.path)
-
 
 dataset <<- readData(paste(folder.path, list.dirs(path = folder.path, full.names = FALSE, recursive = FALSE)[2], sep="/")) 
 
