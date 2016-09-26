@@ -2,14 +2,14 @@
 unTar <- function(path,out){
   tars <- list.files(path = path, full.names = FALSE, recursive = FALSE)
   for(i in 1:length(tars)){
-    dir.create(paste(out,"/run_", tars[i], sep=""))
-    dir.create(paste("tmp","/run_", tars[i], sep=""))
-    untar(paste(path, tars[i], sep="/"), exdir=paste("tmp","/run_", tars[i], sep=""))
-    samples <- list.files(path = paste("tmp","/run_", tars[i], sep=""), full.names = FALSE, recursive = FALSE)
+    dir.create(paste(out,"/", tars[i], sep=""))
+    dir.create(paste("tmp","/", tars[i], sep=""))
+    untar(paste(path, tars[i], sep="/"), exdir=paste("tmp","/", tars[i], sep=""))
+    samples <- list.files(path = paste("tmp","/", tars[i], sep=""), full.names = FALSE, recursive = FALSE)
     for (sample in samples){
-    mat <- fisher_test(load_dnds(in_folder=paste("tmp","/run_", tars[i], "/", sample, "/dnds/", sep=""),
-                                 gap_folder=paste("tmp","/run_", tars[i], "/", sample, "/gap/", sep="")))
-    write.table(mat, file=paste(out,"/run_", tars[i], "/", sample, ".csv", sep=""), quote=F, sep=";", row.names=F)
+    mat <- fisher_test(load_dnds(in_folder=paste("tmp","/", tars[i], "/", sample, "/dnds/", sep=""),
+                                 gap_folder=paste("tmp","/", tars[i], "/", sample, "/gap/", sep="")))
+    write.table(mat, file=paste(out,"/", tars[i], "/", sample, ".csv", sep=""), quote=F, sep=";", row.names=F)
     }
   }
 }
