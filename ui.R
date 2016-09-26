@@ -9,12 +9,14 @@ if(file.exists("/home/eden/eden.sh")){
   # we are inside the docker container
   packrat::on()
   tar.path <<- "/home/eden/data/tar"
+  tmp.path <<- "/srv/shiny-server/eden-visualizer/tmp/"
   folder.path <<- "data"
   dir.create(folder.path)
 } else {
   # we are online hosted
   folder.path <<- "data"
   tar.path <<- "examples"
+  tmp.path <<- "tmp"
   dir.create("tmp")
   dir.create(folder.path)
 }
