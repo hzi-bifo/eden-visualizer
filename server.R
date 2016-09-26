@@ -43,8 +43,28 @@ shinyServer(function(input, output) {
     return(p)
   }
   
+  doAlignmentPlot <- function(dnds, gap, input){
+    require(ggplot2)
+    require(grid)
+    require(gridExtra)
+    if(input$gap){
+      p <- list()
+      for(i in 1:length(dnds)){
+        p[[i]] <- create_msa_plot(dnds_path = dnds[i], 
+                                  gap_path = gap[i],  gapcolor=T)
+      }
+    } else {
+      p <- list()
+      for(i in 1:2){
+        p[[i]] <- create_msa_plot(dnds_path = dnds[i], 
+                                  gap_path = gap[i], gapcolor=F)
+      }
+    }
+    do.call(grid.arrange,p)
+    return(p)
+  }
+  
   doPlotBox <- function(data, input){
-    
     if(input$oderchoice == "mean"){
       p <- ggplot(data, aes(x=reorder(sample, ratio),y=ratio)) +
         geom_boxplot() + theme_bw() + coord_flip()
@@ -77,22 +97,23 @@ shinyServer(function(input, output) {
   }, height=700)
 
   observe({
-    if (input$close > 0) stopApp()                             # stop shiny
+    if (input$close > 0) stopApp() # stop shiny
   })
 
   # Alignment plot
   output$plot3 <- renderPlot({
-    data <-readData(path.summary)
+    data <-readData(paste(folder.path, input$dataset, sep="/"))
     data <- data[which(data$fdr <= input$pval),]
     data <- data[which(data$sample == input$samples),]
-    
-    selected <- input$table_rows_selected
-    if (length(selected)){
-      # plot it
+    data <- data[input$table_rows_selected,]
+    if (ncol(data)>0){
+      # get the dnds an gap paths
+      fam_ids <- data$name
+      dnds <- paste(tmp.path,"/",input$dataset,"/",input$samples,"/dnds/", fam_ids,".txt.DnDsRatio.txt", sep="")
+      gap <- paste(tmp.path,"/", input$dataset,"/",input$samples,"/gap/", fam_ids,".gap.txt", sep="")
+      p <- doAlignmentPlot(dnds, gap, input)
     }
-      #  p <- doAlignmentPlot(data, input)
-  #  downloadableAlignmentPlot <<- p
-    print(p)
+    # else write an error msg that the user have to select some rows
   }, height=700)
   
   # boxplot
