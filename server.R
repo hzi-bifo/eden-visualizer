@@ -55,7 +55,7 @@ shinyServer(function(input, output) {
       }
     } else {
       p <- list()
-      for(i in 1:2){
+      for(i in 1:length(dnds)){
         p[[i]] <- create_msa_plot(dnds_path = dnds[i], 
                                   gap_path = gap[i], gapcolor=F)
       }
