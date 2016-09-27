@@ -1,6 +1,7 @@
 library(shiny)
 library(ggplot2)
 library(zoo)
+library(gridExtra)
 #options(warn=0)
 
 source("functions.R")
@@ -111,7 +112,8 @@ shinyUI(
                       conditionalPanel( 
                         condition="input.tsp=='ap'",
                         checkboxInput('gap', 'color by gap proportion'),
-                        checkboxInput('epitopes', 'highlight epitopes')
+                        checkboxInput('epitopes', 'highlight epitopes'),
+                        downloadButton("dlCurSequenceplot", "Download Graphic")
                       )
                       
                     )),

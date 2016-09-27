@@ -43,10 +43,14 @@ shinyServer(function(input, output) {
     return(p)
   }
   
-  doAlignmentPlot <- function(dnds, gap, input){
+  doAlignmentPlot <- function(data, input){
     require(ggplot2)
     require(grid)
     require(gridExtra)
+    fam_ids <- data$name
+    dnds <- paste(tmp.path,"/",input$dataset,"/",input$samples,"/dnds/", fam_ids,".txt.DnDsRatio.txt", sep="")
+    gap <- paste(tmp.path,"/", input$dataset,"/",input$samples,"/gap/", fam_ids,".gap.txt", sep="")
+    
     if(input$gap){
       p <- list()
       for(i in 1:length(dnds)){
@@ -108,10 +112,8 @@ shinyServer(function(input, output) {
     data <- data[input$table_rows_selected,]
     if (ncol(data)>0){
       # get the dnds an gap paths
-      fam_ids <- data$name
-      dnds <- paste(tmp.path,"/",input$dataset,"/",input$samples,"/dnds/", fam_ids,".txt.DnDsRatio.txt", sep="")
-      gap <- paste(tmp.path,"/", input$dataset,"/",input$samples,"/gap/", fam_ids,".gap.txt", sep="")
-      p <- doAlignmentPlot(dnds, gap, input)
+      p <- doAlignmentPlot(data, input)
+      downloadableAlignmentPlot <<- p
     }
     # else write an error msg that the user have to select some rows
   }, height=700)
@@ -214,7 +216,15 @@ shinyServer(function(input, output) {
     }
   )
   
-  
+  # download sequenceplot
+  output$dlCurSequenceplot <- downloadHandler(
+    filename = 'sequenceplot.pdf',
+    content = function(file){
+      pdf(file = file, width=11, height=8.5)
+      print(downloadableAlignmentPlot)
+      dev.off()
+    }
+  )
   
   # download boxplot
   output$dlCurBoxPlot <- downloadHandler(
