@@ -30,8 +30,6 @@ unTar(tar.path, folder.path)
 
 dataset <<- readData(paste(folder.path, list.dirs(path = folder.path, full.names = FALSE, recursive = FALSE)[1], sep="/")) 
 
-
-
 headerPanel_2 <- function(title, h, windowTitle=title) {    
   tagList(
     tags$head(tags$title(windowTitle)),
