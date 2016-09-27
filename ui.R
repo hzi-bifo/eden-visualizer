@@ -1,5 +1,6 @@
 library(shiny)
 library(ggplot2)
+library(zoo)
 #options(warn=0)
 
 source("functions.R")
@@ -9,12 +10,15 @@ if(file.exists("/home/eden/eden.sh")){
   # we are inside the docker container
   packrat::on()
   tar.path <<- "/home/eden/data/tar"
+  annotation.path <<- "/home/eden/data/annotation"
   tmp.path <<- "/srv/shiny-server/eden-visualizer/tmp/"
   folder.path <<- "data"
   dir.create(folder.path)
 } else {
   # we are online hosted
+  packrat::on()
   folder.path <<- "data"
+  annotation.path <<- "annotation"
   tar.path <<- "examples"
   tmp.path <<- "tmp"
   dir.create("tmp")
@@ -25,6 +29,8 @@ if(file.exists("/home/eden/eden.sh")){
 unTar(tar.path, folder.path)
 
 dataset <<- readData(paste(folder.path, list.dirs(path = folder.path, full.names = FALSE, recursive = FALSE)[1], sep="/")) 
+
+
 
 headerPanel_2 <- function(title, h, windowTitle=title) {    
   tagList(

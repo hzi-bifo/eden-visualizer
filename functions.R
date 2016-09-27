@@ -26,6 +26,24 @@ readData <- function(path.summary){
     file$sample <- sample.names[i]
     mat <- rbind(mat, file)
   }
+  # add annotation
+  mat.annot <- annotate(mat)
+  return(mat.annot)
+}
+
+annotate <- function(mat){
+  # check if its tigrfam
+  if(substring(mat$name, 1,4)[1] == "TIGR"){
+    tigr2link <- try(read.table(paste(annotation.path, "TIGRFAMS_ROLE_LINK", sep="/"),header=F))
+    role2name <- try(read.csv2(paste(annotation.path, "TIGR_ROLE_NAMES", sep="/"), sep="_",header=F))
+    role2term <- data.frame(term = sapply(strsplit(as.character(role2name$V2), "role:\t"), "[[", 2),
+                            id = sapply(strsplit(sapply(strsplit(as.character(role2name$V2), "role:\t"), "[[", 1), "\t"), "[[", 2),
+                            type = sapply(strsplit(sapply(strsplit(as.character(role2name$V2), "role:\t"), "[[", 1), "\t"), "[[", 3))
+  mat$link <- tigr2link[match(mat$name, tigr2link$V1),]$V2
+  mat$term <- role2term[match(mat$link, role2term$id),]$term
+  mat$role <- role2term[match(mat$link, role2term$id),]$type
+  mat$link <- NULL
+  }
   return(mat)
 }
 
@@ -234,6 +252,7 @@ plot_density <- function(set){
 
 # This function creates a p-value matrix indicating significant positions based
 sliding_window <- function(dN, dS, gap_data, w_size=10, g_threshold=0.2){
+  require(zoo)
   dNdS_window <- rep(0,length(dN))
   if (w_size>0){
     dN_window <- rollsum(dN, w_size, fill = list(NA, NULL, NA))
