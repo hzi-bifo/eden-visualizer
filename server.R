@@ -179,6 +179,23 @@ shinyServer(function(input, output) {
   })
   
   
+  # print summary and selected rows
+  output$alignment <- renderPrint({  
+    data <-readData(paste(folder.path, input$dataset, sep="/"))
+    data <- data[which(data$fdr <= input$pval),]
+    data <- data[which(data$sample == input$samples),]
+    
+    if(length(input$samples)>1){
+      cat(paste("Error: you selected more than one dataset! A plot can only be created for one dataset. Please go back to the Data Table tab and deselect the dataset\n"))
+    }
+    s = input$table_rows_selected
+    if (length(s)) {
+      cat("\n")
+      cat(paste(length(s),' protein families were selected:\n'))
+    }
+  })
+  
+  
   #################
   # RENDER TABLES
   #################

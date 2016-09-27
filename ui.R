@@ -41,7 +41,7 @@ headerPanel_2 <- function(title, h, windowTitle=title) {
 shinyUI(
   fluidPage(
     headerPanel_2(
-      HTML('eden selection viewer v. 0.0.2'
+      HTML('eden selection viewer v. 0.0.3'
       ), h3, "test"
     ),
     fluidRow(column(4,
@@ -122,7 +122,7 @@ shinyUI(
                     tabsetPanel(
                       
                       tabPanel("Data Table",h4(""),div(DT::dataTableOutput("table"), style = "font-size:80%"), verbatimTextOutput("summary"), value="map"),
-                      tabPanel("Alignment Plot", plotOutput("plot3", width="100%", height="auto"), value="ap"),
+                      tabPanel("Alignment Plot", verbatimTextOutput("alignment"), plotOutput("plot3", width="100%", height="auto"), value="ap"),
                       tabPanel("Histogram",h4(""), plotOutput("plot1", width="100%", height="auto"), value="ts"),
                       tabPanel("Boxplot",h4(""), plotOutput("plot4", width="100%", height="auto"), value="box"),
                 id="tsp")
