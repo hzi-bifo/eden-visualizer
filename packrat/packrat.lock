@@ -7,6 +7,7 @@ Repos: BioCsoft=http://bioconductor.org/packages/3.1/bioc,
     BioCextra=http://bioconductor.org/packages/3.1/extra,
     CRAN=https://cran.rstudio.com/
 
+<<<<<<< HEAD
 Package: BH
 Source: CRAN
 Version: 1.60.0-2
@@ -17,6 +18,8 @@ Source: CRAN
 Version: 0.5-1
 Hash: 375869004db963f9915f2b8a49b4a718
 
+=======
+>>>>>>> d816ad38a8b9e34f799aafaf0ee6567d9a6d00b8
 Package: DT
 Source: CRAN
 Version: 0.2
@@ -28,12 +31,15 @@ Source: CRAN
 Version: 7.3-45
 Hash: 0650d5701aa7e369e77c9e2c8e1dc913
 
+<<<<<<< HEAD
 Package: PKI
 Source: CRAN
 Version: 0.1-3
 Hash: aca3e459c659b6d8266538520f72ba19
 Requires: base64enc
 
+=======
+>>>>>>> d816ad38a8b9e34f799aafaf0ee6567d9a6d00b8
 Package: R6
 Source: CRAN
 Version: 2.1.2
@@ -44,6 +50,7 @@ Source: CRAN
 Version: 1.1-2
 Hash: c0d56cd15034f395874c870141870c25
 
+<<<<<<< HEAD
 Package: RCurl
 Source: CRAN
 Version: 1.95-4.8
@@ -55,11 +62,14 @@ Source: CRAN
 Version: 1.3-0
 Hash: fb672e20eb6f3010a3639f855d8ef6de
 
+=======
+>>>>>>> d816ad38a8b9e34f799aafaf0ee6567d9a6d00b8
 Package: Rcpp
 Source: CRAN
 Version: 0.12.4
 Hash: 115167d29098a4fd1e572fdbef809438
 
+<<<<<<< HEAD
 Package: assertthat
 Source: CRAN
 Version: 0.1
@@ -81,11 +91,14 @@ Version: 1.17.1
 Hash: 97cb6f6293cd18d17df77a6383cc6763
 Requires: bitops
 
+=======
+>>>>>>> d816ad38a8b9e34f799aafaf0ee6567d9a6d00b8
 Package: colorspace
 Source: CRAN
 Version: 1.2-6
 Hash: 00bb12245cd975c450cc4a960884fa15
 
+<<<<<<< HEAD
 Package: curl
 Source: CRAN
 Version: 2.1
@@ -96,6 +109,8 @@ Version: 1.12.0
 Requires: digest, jsonlite, git2r, httr, memoise, rstudioapi, whisker,
     withr
 
+=======
+>>>>>>> d816ad38a8b9e34f799aafaf0ee6567d9a6d00b8
 Package: dichromat
 Source: CRAN
 Version: 2.0-0
@@ -106,18 +121,22 @@ Source: CRAN
 Version: 0.6.10
 Hash: 87165608ca8aeb0958835c3c5b52b6b7
 
+<<<<<<< HEAD
 Package: dplyr
 Source: CRAN
 Version: 0.5.0
 Hash: ed459cc51725bd1cb7b51cd75dd8424a
 Requires: BH, DBI, R6, Rcpp, assertthat, lazyeval, magrittr, tibble
 
+=======
+>>>>>>> d816ad38a8b9e34f799aafaf0ee6567d9a6d00b8
 Package: ggplot2
 Source: CRAN
 Version: 2.1.0
 Hash: 50e297b0191179c39c7dcae0eff72b51
 Requires: MASS, digest, gtable, plyr, reshape2, scales
 
+<<<<<<< HEAD
 Package: git2r
 Source: CRAN
 Version: 0.15.0
@@ -129,6 +148,8 @@ Version: 2.2.1
 Hash: 8f54b57d4b0598ed5b27e0eafe86a670
 Requires: gtable
 
+=======
+>>>>>>> d816ad38a8b9e34f799aafaf0ee6567d9a6d00b8
 Package: gtable
 Source: CRAN
 Version: 0.2.0
@@ -152,11 +173,14 @@ Version: 1.3.3
 Hash: 9c0fcc725400dab7f86c247bf3fc9d0f
 Requires: Rcpp
 
+<<<<<<< HEAD
 Package: httr
 Source: CRAN
 Version: 1.2.1
 Requires: R6, jsonlite, mime, curl, openssl
 
+=======
+>>>>>>> d816ad38a8b9e34f799aafaf0ee6567d9a6d00b8
 Package: jsonlite
 Source: CRAN
 Version: 1.0
@@ -167,6 +191,7 @@ Source: CRAN
 Version: 0.3
 Hash: ecf589b42cd284b03a4beb9665482d3e
 
+<<<<<<< HEAD
 Package: lattice
 Source: CRAN
 Version: 0.20-34
@@ -177,16 +202,21 @@ Source: CRAN
 Version: 0.2.0
 Hash: 3d6e7608e65bbf5cb170dab1e3c9ed8b
 
+=======
+>>>>>>> d816ad38a8b9e34f799aafaf0ee6567d9a6d00b8
 Package: magrittr
 Source: CRAN
 Version: 1.5
 Hash: bdc4d48c3135e8f3b399536ddf160df4
 
+<<<<<<< HEAD
 Package: memoise
 Source: CRAN
 Version: 1.0.0
 Requires: digest
 
+=======
+>>>>>>> d816ad38a8b9e34f799aafaf0ee6567d9a6d00b8
 Package: mime
 Source: CRAN
 Version: 0.5
@@ -198,10 +228,13 @@ Version: 0.4.3
 Hash: f96d896947fcaf9b6d0074002e9f4f9d
 Requires: colorspace
 
+<<<<<<< HEAD
 Package: openssl
 Source: CRAN
 Version: 0.9.4
 
+=======
+>>>>>>> d816ad38a8b9e34f799aafaf0ee6567d9a6d00b8
 Package: packrat
 Source: github
 Version: 0.4.7-22
@@ -229,6 +262,7 @@ Version: 1.4.1
 Hash: bda269da8b147b0beea2c0e16bdce20d
 Requires: Rcpp, plyr, stringr
 
+<<<<<<< HEAD
 Package: rsconnect
 Source: github
 Version: 0.4.1.4
@@ -244,6 +278,8 @@ Source: CRAN
 Version: 0.6
 Hash: fd256f8bfb9a64cc35f98b0decb1a79f
 
+=======
+>>>>>>> d816ad38a8b9e34f799aafaf0ee6567d9a6d00b8
 Package: scales
 Source: CRAN
 Version: 0.4.0
@@ -267,6 +303,7 @@ Version: 1.0.0
 Hash: 2676dd5f88890910962b733b0f9540e1
 Requires: magrittr, stringi
 
+<<<<<<< HEAD
 Package: tibble
 Source: CRAN
 Version: 1.2
@@ -281,6 +318,8 @@ Package: withr
 Source: CRAN
 Version: 1.0.2
 
+=======
+>>>>>>> d816ad38a8b9e34f799aafaf0ee6567d9a6d00b8
 Package: xtable
 Source: CRAN
 Version: 1.8-2
@@ -290,9 +329,12 @@ Package: yaml
 Source: CRAN
 Version: 2.1.13
 Hash: 4854ccabebc225e8a7309fb4a74980de
+<<<<<<< HEAD
 
 Package: zoo
 Source: CRAN
 Version: 1.7-13
 Hash: 5e9d37229de4b68b9a5e09a619e0f9b6
 Requires: lattice
+=======
+>>>>>>> d816ad38a8b9e34f799aafaf0ee6567d9a6d00b8
