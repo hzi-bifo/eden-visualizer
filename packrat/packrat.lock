@@ -63,7 +63,7 @@ Package: devtools
 Source: CRAN
 Version: 1.12.0
 Hash: bbad95109ae75cbb14099281cda43af2
-Requires: digest, jsonlite, git2r, httr, memoise, rstudioapi, whisker,
+Requires: digest, git2r, httr, jsonlite, memoise, rstudioapi, whisker,
     withr
 
 Package: dichromat
@@ -85,10 +85,12 @@ Requires: MASS, digest, gtable, plyr, reshape2, scales
 Package: git2r
 Source: CRAN
 Version: 0.15.0
+Hash: 92d5a9f3cba5e146b92a76dabbc29fbb
 
 Package: gridExtra
 Source: CRAN
 Version: 2.2.1
+Hash: 8f54b57d4b0598ed5b27e0eafe86a670
 Requires: gtable
 
 Package: gtable
@@ -118,7 +120,7 @@ Package: httr
 Source: CRAN
 Version: 1.1.0
 Hash: 27ffb4b4dbb8ac4019126070d66910fc
-Requires: R6, jsonlite, mime, curl, openssl
+Requires: R6, curl, jsonlite, mime, openssl
 
 Package: jsonlite
 Source: CRAN
@@ -160,6 +162,7 @@ Requires: colorspace
 Package: openssl
 Source: CRAN
 Version: 0.9.4
+Hash: 5ceb5d83bba44e8e5a764ac6ad32e9fb
 
 Package: packrat
 Source: github
@@ -191,6 +194,7 @@ Requires: Rcpp, plyr, stringr
 Package: rstudioapi
 Source: CRAN
 Version: 0.6
+Hash: fd256f8bfb9a64cc35f98b0decb1a79f
 
 Package: scales
 Source: CRAN
@@ -218,6 +222,7 @@ Requires: magrittr, stringi
 Package: whisker
 Source: CRAN
 Version: 0.3-2
+Hash: 803d662762e532705c2c066a82d066e7
 
 Package: withr
 Source: CRAN
