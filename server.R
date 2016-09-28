@@ -68,7 +68,29 @@ shinyServer(function(input, output) {
     return(p)
   }
   
+  doAnnotationplot <- function(data, input){
+    require(ggplot2)
+    if(input$navalues){
+      # remove NA values
+      data <- data[which(!is.na(data$term)),]
+    }
+    if(input$sortannotation == "ratio"){
+    p <- ggplot(data, aes(x=reorder(term, ratio), y=ratio))
+    } else {
+      p <- ggplot(data, aes(x=reorder(term, -fdr), y=ratio))
+    }
+    p <- p + geom_boxplot() + theme_bw() + coord_flip()
+    if(input$showmean){
+      p <- p + geom_hline(yintercept = mean(data$ratio, na.rm=T))
+    }
+    if(input$showmeanselected){
+      p <- p + geom_hline(yintercept = mean(data[input$table_rows_selected,]$ratio, na.rm=T), color="red")
+    }
+    return(p)
+  }
+  
   doPlotBox <- function(data, input){
+    require(ggplot2)
     if(input$oderchoice == "mean"){
       p <- ggplot(data, aes(x=reorder(sample, ratio),y=ratio)) +
         geom_boxplot() + theme_bw() + coord_flip()
@@ -128,6 +150,15 @@ shinyServer(function(input, output) {
     print(p)
   }, height=700)
   
+  # boxplot
+  output$annotationplot <- renderPlot({
+    data <- readData(paste(folder.path, input$dataset, sep="/"))
+    data <- data[which(data$fdr <= input$pval),]
+    data <- data[which(data$sample == input$samples),]
+    p <- doAnnotationplot(data, input)
+    downloadableAnnotaionplot <<- p
+    print(p)
+  }, height=700)
   
   #################
   # RENDER TEXT
@@ -251,6 +282,16 @@ shinyServer(function(input, output) {
     content = function(file){
       pdf(file = file, width=11, height=8.5)
       print(downloadableBoxplot)
+      dev.off()
+    }
+  )
+  
+  # download sequenceplot
+  output$dlCurAnnotationplot <- downloadHandler(
+    filename = 'annotationplot.pdf',
+    content = function(file){
+      pdf(file = file, width=11, height=8.5)
+      print(downloadableAnnotaionplot)
       dev.off()
     }
   )
