@@ -67,24 +67,50 @@ shinyServer(function(input, output) {
     do.call(grid.arrange,p)
     return(p)
   }
-  
+ 
   doAnnotationplot <- function(data, input){
     require(ggplot2)
+    
+    df <- NULL
+    df <- data.frame(term=unique(data$term), pval=rep(-1,length(unique(data$term))))
+    df <- df[which(!is.na(df$term)),]
+    i <- 1
+    for(term in df$term){
+      data.term <- data[which(data$term == term),]
+      data.nonterm <- data[which(data$term != term),]
+      test.mat <-
+        matrix(c(sum(data.nonterm$sum_pN), sum(data.term$sum_pN), sum(data.term$sum_pS), sum(data.nonterm$sum_pS)),
+               nrow = 2,
+               dimnames =
+                 list(c("background", "selected"),
+                      c("dN", "dS")))
+      df[i,]$pval <- fisher.test(test.mat, alternative = "less")$p.value
+      i <- i + 1 
+    }
+    annotation <<- df
+    
     if(input$navalues){
       # remove NA values
       data <- data[which(!is.na(data$term)),]
     }
     if(input$sortannotation == "ratio"){
-    p <- ggplot(data, aes(x=reorder(term, ratio), y=ratio))
+      if(input$bysamplecolor){
+        p <- ggplot(data, aes(x=reorder(term, ratio), y=ratio, fill=sample))
+      } else {
+        p <- ggplot(data, aes(x=reorder(term, ratio), y=ratio))
+      }
     } else {
       p <- ggplot(data, aes(x=reorder(term, -fdr), y=ratio))
     }
-    p <- p + geom_boxplot() + theme_bw() + coord_flip()
+    p <- p + geom_boxplot(width=0.3) + theme_bw() + coord_flip()
     if(input$showmean){
       p <- p + geom_hline(yintercept = mean(data$ratio, na.rm=T))
     }
     if(input$showmeanselected){
       p <- p + geom_hline(yintercept = mean(data[input$table_rows_selected,]$ratio, na.rm=T), color="red")
+    }
+    if(input$bysamplefacet){
+      p <- p + facet_wrap(~ sample)
     }
     return(p)
   }
@@ -193,8 +219,10 @@ shinyServer(function(input, output) {
       cat("\n")
       print(data.selection$name)
       cat("\n")
+      
+
       test.mat <-
-        matrix(c(sum(data$sum_pN), sum(data.selection$sum_pN), sum(data.selection$sum_pS), 3),
+        matrix(c(sum(data$sum_pN), sum(data.selection$sum_pN), sum(data.selection$sum_pS), sum(data$sum_pS)),
                nrow = 2,
                dimnames =
                  list(c("background", "selected"),
@@ -235,6 +263,10 @@ shinyServer(function(input, output) {
   
   output$table_filtered <- DT::renderDataTable(
     DT::datatable(dataset, options = list(paging = 25))
+  )
+  
+  output$table_annotaion <- DT::renderDataTable(
+    DT::datatable(annotation, options = list(paging = 25))
   )
   
   output$table <- DT::renderDataTable(

@@ -121,6 +121,8 @@ shinyUI(
                         condition="input.tsp=='annot'",
                         checkboxInput('navalues', 'remove NA'),
                         checkboxInput('showmean', 'plot mean value'),
+                        checkboxInput('bysamplefacet', 'facet by sample'),
+                        checkboxInput('bysamplecolor', 'color by sample'),
                         checkboxInput('showmeanselected', 'plot mean of selected families'),
                         selectInput("sortannotation", label = "Order by", 
                                     choices = list("ratio" = "ratio", "p-value" = "pvalue"), 
@@ -135,7 +137,8 @@ shinyUI(
                       
                       tabPanel("Data Table",h4(""),div(DT::dataTableOutput("table"), style = "font-size:80%"), verbatimTextOutput("summary"), value="map"),
                       tabPanel("Alignment Plot", verbatimTextOutput("alignment"), plotOutput("plot3", width="100%", height="auto"), value="ap"),
-                      tabPanel("Annotation Plot", plotOutput("annotationplot", width="100%", height="auto"), value="annot"),
+                      tabPanel("Categories",  div(DT::dataTableOutput("table_annotaion"), style = "font-size:80%"), plotOutput("annotationplot", width="100%", height="auto"), value="annot"),
+
                       tabPanel("Histogram",h4(""), plotOutput("plot1", width="100%", height="auto"), value="ts"),
                       tabPanel("Boxplot",h4(""), plotOutput("plot4", width="100%", height="auto"), value="box"),
                 id="tsp")
