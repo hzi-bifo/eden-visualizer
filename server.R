@@ -192,6 +192,8 @@ shinyServer(function(input, output) {
     if (length(s)) {
       cat("\n")
       cat(paste(length(s),' protein families were selected:\n'))
+    } else {
+      cat("No gene families selected! Please go to the Data Table tab and select one or more rows in the data table.")
     }
   })
   
