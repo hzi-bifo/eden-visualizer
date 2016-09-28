@@ -85,8 +85,10 @@ shinyServer(function(input, output) {
                  list(c("background", "selected"),
                       c("dN", "dS")))
       df[i,]$pval <- fisher.test(test.mat, alternative = "less")$p.value
+      
       i <- i + 1 
     }
+    df$fdr <- p.adjust(df$pval, method="fdr")
     annotation <<- df
     
     if(input$navalues){
