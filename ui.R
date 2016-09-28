@@ -140,7 +140,8 @@ shinyUI(
                       tabPanel("Categories",  div(DT::dataTableOutput("table_annotaion"), style = "font-size:80%"), plotOutput("annotationplot", width="100%", height="auto"), value="annot"),
 
                       tabPanel("Histogram",h4(""), plotOutput("plot1", width="100%", height="auto"), value="ts"),
-                      tabPanel("Boxplot",h4(""), plotOutput("plot4", width="100%", height="auto"), value="box"),
+                      
+                      tabPanel("Boxplot",h4(""),  div(DT::dataTableOutput("table_sample"), style = "font-size:80%"),  plotOutput("plot4", width="100%", height="auto"), value="box"),
                 id="tsp")
                     
                     

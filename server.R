@@ -116,9 +116,31 @@ shinyServer(function(input, output) {
     }
     return(p)
   }
+
   
   doPlotBox <- function(data, input){
     require(ggplot2)
+    
+    
+    df <- NULL
+    df <- data.frame(sample=unique(data$sample), pval=rep(-1,length(unique(data$sample))))
+    df <- df[which(!is.na(df$sample)),]
+    i <- 1
+    for(sample in df$sample){
+      data.sample <- data[which(data$sample == sample),]
+      data.nonsample <- data[which(data$sample != sample),]
+      test.mat <-
+        matrix(c(sum(data.nonsample$sum_pN), sum(data.sample$sum_pN), sum(data.sample$sum_pS), sum(data.nonsample$sum_pS)),
+               nrow = 2,
+               dimnames =
+                 list(c("background", "selected"),
+                      c("dN", "dS")))
+      df[i,]$pval <- fisher.test(test.mat, alternative = "less")$p.value
+      i <- i + 1 
+    }
+    df$fdr <- p.adjust(df$pval, method="fdr")
+    sample_pval <<- df
+    
     if(input$oderchoice == "mean"){
       p <- ggplot(data, aes(x=reorder(sample, ratio),y=ratio)) +
         geom_boxplot() + theme_bw() + coord_flip()
@@ -173,11 +195,11 @@ shinyServer(function(input, output) {
     data <- readData(paste(folder.path, input$dataset, sep="/"))
     data <- data[which(data$fdr <= input$pval),]
     data <- data[which(data$sample == input$samples),]
-    p <- doPlotBox(data, input)
+    p <- try(doPlotBox(data, input))
     downloadableBoxplot <<- p
     print(p)
   }, height=700)
-  
+
   # boxplot
   output$annotationplot <- renderPlot({
     data <- readData(paste(folder.path, input$dataset, sep="/"))
@@ -247,15 +269,17 @@ shinyServer(function(input, output) {
     data <- data[which(data$sample == input$samples),]
     
     if(length(input$samples)>1){
-      cat(paste("Error: you selected more than one dataset! A plot can only be created for one dataset. Please go back to the Data Table tab and deselect the dataset\n"))
+      cat(paste("Error: More than one dataset selected! A plot can only be created for one dataset. Please go back to the Data Table tab and deselect the dataset\n"))
     }
     s = input$table_rows_selected
     if (length(s)) {
       cat("\n")
       cat(paste(length(s),' protein families were selected:\n'))
     } else {
-      cat("No gene families selected! Please go to the Data Table tab and select one or more rows in the data table.")
+      cat("Error: No gene families selected! Please go to the Data Table tab and select one or more rows in the data table.")
     }
+    
+    cat(length(input$samples))
   })
   
   
@@ -271,17 +295,45 @@ shinyServer(function(input, output) {
     DT::datatable(annotation, options = list(paging = 25))
   )
   
+  
+  output$table_sample <- DT::renderDataTable(
+    DT::datatable(sample_pval, options = list(paging = 25))
+  )
+  
   output$table <- DT::renderDataTable(
     DT::datatable(dataset, options = list(pageLength = 25))
   )
   
   # Filter data based on selections
   output$table <- DT::renderDataTable(DT::datatable({
+    require(pander)
     data <- readData(paste(folder.path, input$dataset, sep="/"))
     data <- data[which(data$fdr <= input$pval),]
-    data <- data[which(data$sample == input$samples),]
-    downloadObj <<- data # generate downloadable table
-    input$resetSelection 
+    if(length(input$samples) > 1){
+      print("multiple samples selected")
+      subset <- NULL
+      data_pool <- NULL
+      for(i in 1:length(input$samples)){
+        print(paste("check to", input$samples[i], sep=" "))
+        subset <- data[which(data$sample == input$samples[i]),]
+        data_pool <- rbind(subset,data_pool)
+        print(paste("subset length is", nrow(subset), sep=" "))
+      }
+      data <- data_pool
+    } else {
+      data <- data[which(data$sample == input$samples),]
+      print("length is one")
+    }
+ #   data$stars <- add.significance.stars(data$fdr)
+    data$sum_pN <- NULL
+    data$sum_pS <- NULL
+    data$role <- NULL
+    data$pvalue <- NULL
+    data$ratio <- round(data$ratio, digits=3)
+  #  colnames(data) <- c("family name", "dnds ratio", "significance lvl","adjusted pvalue", "dataset", "family description")
+    data$fdr <- round(data$fdr, digits=5)
+  #  downloadObj <<- data # generate downloadable table
+  #  input$resetSelection 
     data
   }))
   
