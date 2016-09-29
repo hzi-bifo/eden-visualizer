@@ -1,3 +1,8 @@
+################################################################################
+# shiny application to visualize EDEN output .tar files 
+# by Philipp C. Münch (pmu15@helmholtz-hzi.de)
+################################################################################
+
 # untar file
 unTar <- function(path,out){
   tars <- list.files(path = path, full.names = FALSE, recursive = FALSE)
@@ -192,7 +197,8 @@ create_msa_plot <- function(dnds_path = "",
                             only_legend = FALSE,
                             window_size = 10,
                             gap_threshold = 0.6, 
-                            gapcolor = TRUE){
+                            gapcolor = TRUE,
+                            points = TRUE){
   require(zoo)
   gap_data <- try(read.table(gap_path,header=F))
   dnds_data <- try(read.table(dnds_path,header=T))
@@ -220,17 +226,23 @@ create_msa_plot <- function(dnds_path = "",
   #### genereate plot #### 
   # create sequence plot figure with dnds and gap informations
   fig_a <- ggplot(df, aes(position, selection))
+  fig_a <- fig_a + theme_classic() + xlab("base") + ylab("dN/dS ratio") 
+  fig_a <- fig_a + ggtitle(paste(dnds_path,sep=""))
   # highlight significant aereas
   fig_a <- fig_a + geom_rect(data=epitopes, aes(NULL, NULL, xmin = start, xmax = end), 
                              ymin = -Inf, ymax = Inf,  fill="grey80")
   fig_a <- fig_a + geom_ribbon(aes(x=position, ymax=selection_smooth,ymin=1), fill="grey60")
-  if(gapcolor){
-    fig_a <- fig_a + geom_point(aes(colour=gap), size = 1.7, alpha=3/4)
-  } else {
-    fig_a <- fig_a + geom_point(size = 1.7, alpha=3/4)
+  if(points){
+    if(gapcolor){
+      fig_a <- fig_a + geom_point(aes(colour=gap), size = 1.7, alpha=3/4)
+    } else {
+      fig_a <- fig_a + geom_point(size = 1.7, alpha=3/4)
+    }
   }
+  
   fig_a <- fig_a + scale_colour_gradient(low = "green", high="red")
-  fig_a <- fig_a + theme_bw() + xlab(" ") + ylab("dN/dS ratio") 
+ 
+ 
   fig_a <- fig_a + geom_line(aes(y=selection_smooth))
   #fig_a <- fig_a + labs(title=paste(sample_name,"; g_threshold=", gap_threshold,"; window_size=", window_size,sep=""))
   # fig_a <- fig_a + geom_hline(aes(yintercept=1))
