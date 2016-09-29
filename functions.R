@@ -230,8 +230,8 @@ create_msa_plot <- function(dnds_path = "",
   fig_a <- fig_a + ggtitle(paste(dnds_path,sep=""))
   # highlight significant aereas
   fig_a <- fig_a + geom_rect(data=epitopes, aes(NULL, NULL, xmin = start, xmax = end), 
-                             ymin = -Inf, ymax = Inf,  fill="grey80")
-  fig_a <- fig_a + geom_ribbon(aes(x=position, ymax=selection_smooth,ymin=1), fill="grey60")
+                             ymin = -Inf, ymax = Inf,  fill="red")
+  fig_a <- fig_a + geom_ribbon(aes(x=position, ymax=selection_smooth,ymin=1), fill="grey80")
   if(points){
     if(gapcolor){
       fig_a <- fig_a + geom_point(aes(colour=gap), size = 1.7, alpha=3/4)
@@ -240,7 +240,7 @@ create_msa_plot <- function(dnds_path = "",
     }
   }
   
-  fig_a <- fig_a + scale_colour_gradient(low = "green", high="red")
+  fig_a <- fig_a + scale_colour_gradient(low = "green", high = "blue")
  
  
   fig_a <- fig_a + geom_line(aes(y=selection_smooth))

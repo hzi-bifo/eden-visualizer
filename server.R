@@ -13,8 +13,6 @@ shinyServer(function(input, output) {
       readData(paste(folder.path, input$dataset, sep="/"))
   })
   
-  
-  
   #################
   # render table functions
   #################
@@ -23,13 +21,78 @@ shinyServer(function(input, output) {
     DT::datatable(dataset, options = list(paging = 25))
   )
   
-  output$table_annotaion <- DT::renderDataTable(
-    DT::datatable(annotation, options = list(paging = 25))
-  )
+  output$table_annotaion <- DT::renderDataTable(DT::datatable({
+    require(pander)
+    data <- readData(paste(folder.path, input$dataset, sep="/"))
+    data <- data[which(data$fdr <= input$pval),]
+    if(length(input$samples) > 1){
+      subset <- NULL
+      data_pool <- NULL
+      for(i in 1:length(input$samples)){
+        subset <- data[which(data$sample == input$samples[i]),]
+        data_pool <- rbind(subset,data_pool)
+      }
+      data <- data_pool
+    } else {
+      data <- data[which(data$sample == input$samples),]
+    }
+    
+      df <- NULL
+      df <- data.frame(term=unique(data$term), pval=rep(-1,length(unique(data$term))), elements=rep(0,length(unique(data$term))))
+      df <- df[which(!is.na(df$term)),]
+      i <- 1
+      for(term in df$term){
+        data.term <- data[which(data$term == term),]
+        data.nonterm <- data[which(data$term != term),]
+        test.mat <-
+          matrix(c(sum(data.nonterm$sum_pN), sum(data.term$sum_pN), sum(data.term$sum_pS), sum(data.nonterm$sum_pS)),
+                 nrow = 2,
+                 dimnames =
+                   list(c("background", "selected"),
+                        c("dN", "dS")))
+        df[i,]$pval <- fisher.test(test.mat, alternative = "greater")$p.value
+        df[i,]$elements <- df[i,]$elements  + nrow(data.term)
+        i <- i + 1 
+      }
+      df$fdr <- p.adjust(df$pval, method="fdr")
+      df
+    }))
   
-  output$table_sample <- DT::renderDataTable(
-    DT::datatable(sample_pval, options = list(paging = 25))
-  )
+  output$table_sample <- DT::renderDataTable(DT::datatable({
+    require(pander)
+    data <- readData(paste(folder.path, input$dataset, sep="/"))
+    data <- data[which(data$fdr <= input$pval),]
+    if(length(input$samples) > 1){
+      subset <- NULL
+      data_pool <- NULL
+      for(i in 1:length(input$samples)){
+        subset <- data[which(data$sample == input$samples[i]),]
+        data_pool <- rbind(subset,data_pool)
+      }
+      data <- data_pool
+    } else {
+      data <- data[which(data$sample == input$samples),]
+    }
+    
+    df <- NULL
+    df <- data.frame(sample=unique(data$sample), pval=rep(-1,length(unique(data$sample))))
+    df <- df[which(!is.na(df$sample)),]
+    i <- 1
+    for(sample in df$sample){
+      data.sample <- data[which(data$sample == sample),]
+      data.nonsample <- data[which(data$sample != sample),]
+      test.mat <-
+        matrix(c(sum(data.sample$sum_pN), sum(data.sample$sum_pS), sum(data.nonsample$sum_pN), sum(data.nonsample$sum_pS)),
+               nrow = 2,
+               dimnames =
+                 list(c("dN", "dS"),
+                      c("selected", "background")))
+      df[i,]$pval <- fisher.test(test.mat, alternative = "greater")$p.value
+      i <- i + 1 
+    }
+    df$fdr <- p.adjust(df$pval, method="fdr")
+    df
+}))
   
   output$table <- DT::renderDataTable(
     DT::datatable(dataset, options = list(pageLength = 25))
@@ -194,31 +257,12 @@ shinyServer(function(input, output) {
     p <- p + scale_fill_manual(breaks = c(TRUE, FALSE), values = c("grey80", "black")) + guides(fill=FALSE)
     p <- p + labs(x = "Samples", y="# protein families") + ggtitle("Selected samples")
     p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-    
     return(p)
   }
   
+  
   doAnnotationplot <- function(data, input){
     require(ggplot2)
-    df <- NULL
-    df <- data.frame(term=unique(data$term), pval=rep(-1,length(unique(data$term))))
-    df <- df[which(!is.na(df$term)),]
-    i <- 1
-    for(term in df$term){
-      data.term <- data[which(data$term == term),]
-      data.nonterm <- data[which(data$term != term),]
-      test.mat <-
-        matrix(c(sum(data.nonterm$sum_pN), sum(data.term$sum_pN), sum(data.term$sum_pS), sum(data.nonterm$sum_pS)),
-               nrow = 2,
-               dimnames =
-                 list(c("background", "selected"),
-                      c("dN", "dS")))
-      df[i,]$pval <- fisher.test(test.mat, alternative = "less")$p.value
-      i <- i + 1 
-    }
-    df$fdr <- p.adjust(df$pval, method="fdr")
-    annotation <<- df
-    
     if(input$navalues){
       # remove NA values
       data <- data[which(!is.na(data$term)),]
@@ -226,13 +270,15 @@ shinyServer(function(input, output) {
     if(input$sortannotation == "ratio"){
       if(input$bysamplecolor){
         p <- ggplot(data, aes(x=reorder(term, ratio), y=ratio, fill=sample))
+        p <- p + geom_boxplot(width=0.3) + theme_classic() + coord_flip()
       } else {
         p <- ggplot(data, aes(x=reorder(term, ratio), y=ratio))
+        p <- p + geom_boxplot(width=0.3, fill="grey80") + theme_classic() + coord_flip()
       }
     } else {
       p <- ggplot(data, aes(x=reorder(term, -fdr), y=ratio))
     }
-    p <- p + geom_boxplot(width=0.3) + theme_bw() + coord_flip()
+    p <- p + ylab("dN/dS ratio") + xlab("functional group")
     if(input$showmean){
       p <- p + geom_hline(yintercept = mean(data$ratio, na.rm=T))
     }
@@ -242,42 +288,24 @@ shinyServer(function(input, output) {
     if(input$bysamplefacet){
       p <- p + facet_wrap(~ sample)
     }
+    
     return(p)
   }
   
   doPlotBox <- function(data, input){
     require(ggplot2)
-    df <- NULL
-    df <- data.frame(sample=unique(data$sample), pval=rep(-1,length(unique(data$sample))))
-    df <- df[which(!is.na(df$sample)),]
-    i <- 1
-    for(sample in df$sample){
-      data.sample <- data[which(data$sample == sample),]
-      data.nonsample <- data[which(data$sample != sample),]
-      test.mat <-
-        matrix(c(sum(data.nonsample$sum_pN), sum(data.sample$sum_pN), sum(data.sample$sum_pS), sum(data.nonsample$sum_pS)),
-               nrow = 2,
-               dimnames =
-                 list(c("background", "selected"),
-                      c("dN", "dS")))
-      df[i,]$pval <- fisher.test(test.mat, alternative = "less")$p.value
-      i <- i + 1 
-    }
-    df$fdr <- p.adjust(df$pval, method="fdr")
-    sample_pval <<- df
-    
+  
     if(input$oderchoice == "mean"){
-      p <- ggplot(data, aes(x=reorder(sample, ratio),y=ratio)) +
-        geom_boxplot() + theme_bw() + coord_flip()
+      p <- ggplot(data, aes(x=reorder(sample, ratio),y=ratio))
     } else {
-      p <- ggplot(data, aes(x=sample,y=ratio)) +
-        geom_boxplot() + theme_bw() + coord_flip()
+      p <- ggplot(data, aes(x=sample,y=ratio))
     }
-    
+    p <- p + geom_boxplot(fill="grey80", width=0.8) + theme_classic() + coord_flip()
     if (input$highlightbox){
       mark.ratio <- data[input$table_rows_selected,]$ratio
       p <- p + geom_hline(yintercept = mean(mark.ratio, na.rm=T))
     }
+     
     return(p)
   }
   
@@ -334,21 +362,44 @@ shinyServer(function(input, output) {
   output$plot4 <- renderPlot({
     data <- readData(paste(folder.path, input$dataset, sep="/"))
     data <- data[which(data$fdr <= input$pval),]
-    data <- data[which(data$sample == input$samples),]
+    if(length(input$samples) > 1){
+      subset <- NULL
+      data_pool <- NULL
+      for(i in 1:length(input$samples)){
+        subset <- data[which(data$sample == input$samples[i]),]
+        data_pool <- rbind(subset,data_pool)
+      }
+      data <- data_pool
+    } else {
+      data <- data[which(data$sample == input$samples),]
+    }
+    
     p <- doPlotBox(data, input)
     downloadableBoxplot <<- p
     print(p)
-  }, height=700)
+  }, height=300)
   
   # boxplot
   output$annotationplot <- renderPlot({
     data <- readData(paste(folder.path, input$dataset, sep="/"))
     data <- data[which(data$fdr <= input$pval),]
-    data <- data[which(data$sample == input$samples),]
+  #  data <- data[which(data$sample == input$samples),]
+    
+    if(length(input$samples) > 1){
+      subset <- NULL
+      data_pool <- NULL
+      for(i in 1:length(input$samples)){
+        subset <- data[which(data$sample == input$samples[i]),]
+        data_pool <- rbind(subset,data_pool)
+      }
+      data <- data_pool
+    } else {
+      data <- data[which(data$sample == input$samples),]
+    }
     p <- doAnnotationplot(data, input)
     downloadableAnnotaionplot <<- p
     print(p)
-  }, height=700)
+  }, height=400)
   
   # annotation plot
   output$annotationplotglobal <- renderPlot({
@@ -402,7 +453,7 @@ shinyServer(function(input, output) {
       cat("\n")
       cat(paste(length(s),' protein families are selected:\n'))
       # subset the data based on selection
-      data.selection <- data[input$table_rows_selected, ]
+      data.selection <<- data[input$table_rows_selected, ]
       cat(paste("mean ratio:", round(mean(data.selection$ratio),digits = 3), "+-",round(sd(data.selection$ratio),digits = 3) ,"SD"))
       # perform fisher test 
       cat("\n")
@@ -474,6 +525,11 @@ shinyServer(function(input, output) {
   # overview  tab
   output$alignment_figure <- renderText({paste("Figure: Sequence clusters of residues under positive selection in selected protein families. Dots indicate dN/dS ratio for a given position in the protein sequence, and their color corresponds to the proportion of gaps in the multiple sequence alignment (MSA). Gray-shaded areas indicate significant clusters of residues under positive selection.</br></br>")})
   
+  
+  # boxplot tab
+  output$boxplot_hint <- renderText({paste("</br><font color=\"#008080\"><b>", "Hint: Select multiple samples on the widget on the right side to compare the dN/dS ratio of the samples.</b></font></br></br>")})
+  output$boxplot_figure <- renderText({paste("Figure: some figure text here</br></br>")})
+  output$boxplot_table <- renderText({paste("Table: some table text here</br></br>")})
   
   
   
