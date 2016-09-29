@@ -1,8 +1,9 @@
+
 library(shiny)
 library(ggplot2)
 library(zoo)
 library(gridExtra)
-#options(warn=0)
+options(warn=0)
 
 source("functions.R")
 
@@ -41,7 +42,7 @@ headerPanel_2 <- function(title, h, windowTitle=title) {
 shinyUI(
   fluidPage(
     headerPanel_2(
-      HTML('eden selection viewer v. 0.0.4'
+      HTML('eden selection viewer v. 0.0.5'
       ), h3, "test"
     ),
     fluidRow(column(4,
@@ -49,26 +50,25 @@ shinyUI(
                       
                       # ----------- table panel
                       conditionalPanel( 
-                        condition="input.tsp=='map'",
+                        condition="input.tsp=='overview' || input.tsp=='annotation'",
                         helpText("If you want to use the results of a previous eden run, select the analysis here"), 
                      
-                        selectInput("dataset", "Import a previous eden run", choices= list.dirs(path = "data", full.names = FALSE, recursive = FALSE), selected=list.dirs(path = "csv", full.names = FALSE, recursive = FALSE)[1], multiple=F, width="100%"),
-                         helpText("The selection of the dataset and p-value threshold will filter the data for all Panels. Try it out and select also the sample obese_m and obese_f"),
-                        
+                        selectInput("dataset", "Select eden run", choices= list.dirs(path = "data", full.names = FALSE, recursive = FALSE), selected=list.dirs(path = "csv", full.names = FALSE, recursive = FALSE)[1], multiple=F, width="100%"),
+                         
                         uiOutput('filters_UI'),
                         
-                        
-                        
                         #selectInput("samples", "Choose one or more datasets:", choices=levels(factor(dataset$sample)), selected=c(levels(factor(dataset$sample))[1]), multiple=T, width="100%"),
-                        
-                        textInput("pval", label = "Filter by p-value", value = "1"),
+                        selectInput('dofiltering', label='Choose a way to filter matrix', choices=c("pvalue", "ratio"), selected="no filtering"),uiOutput("dependentselection"),
+#                        textInput("pval", label = "p-value threshold", value = "1"),
                         conditionalPanel(
-                          condition="input.tsp=='map'",
+                          condition="input.tsp=='overview'",
                           actionButton(  'resetSelection',label = "Click to reset row selection"),
                           helpText("You can select rows on the table and a p-value will be calculated to check if the selected families have a significant higher ratio than the background."),
                           downloadButton("dlTable", "Download Table", class="btn-block btn-primary")
                         )
                       ),
+
+
                       
                       # ----------- histogram panel
                       conditionalPanel( 
@@ -85,13 +85,13 @@ shinyUI(
                       ), 
        
                       conditionalPanel(
-                        condition="input.tsp=='map'",helpText("You have to close this application before you can stop eden"),
+                        condition="input.tsp=='map'",
                         tags$button(
                           id = 'close',
                           type = "button",
                           class = "btn action-button",
                           onclick = "setTimeout(function(){window.close();},500);",  # close browser
-                          "Close eden Visualizer"
+                          "Close Application"
                         )
                       ), 
                       
@@ -113,14 +113,17 @@ shinyUI(
                         condition="input.tsp=='ap'",
                         checkboxInput('gap', 'color by gap proportion'),
                         checkboxInput('epitopes', 'highlight epitopes'),
+                        
                         downloadButton("dlCurSequenceplot", "Download Graphic")
+                        
+                       
                       ),
                       
                       # ----------- alignmentplot panel
                       conditionalPanel( 
                         condition="input.tsp=='annot'",
-                        checkboxInput('navalues', 'remove NA'),
-                        checkboxInput('showmean', 'plot mean value'),
+                        checkboxInput('navalues', 'remove NA', value=TRUE),
+                        checkboxInput('showmean', 'plot mean value', value=TRUE),
                         checkboxInput('bysamplefacet', 'facet by sample'),
                         checkboxInput('bysamplecolor', 'color by sample'),
                         checkboxInput('showmeanselected', 'plot mean of selected families'),
@@ -132,10 +135,11 @@ shinyUI(
                       
                     )),
              
-             column(8,
+column(8,
                     tabsetPanel(
-                      
-                      tabPanel("Data Table",h4(""),div(DT::dataTableOutput("table"), style = "font-size:80%"), verbatimTextOutput("summary"), value="map"),
+                      # ,plotOutput("sampleplot", width="80%", height="auto")
+                     tabPanel("Overview",htmlOutput("overview_hint"), div(DT::dataTableOutput("table"), style = "font-size:80%"), htmlOutput("overview_table"), htmlOutput("overview_hint2"), verbatimTextOutput("summary"),  value="overview"),
+                      tabPanel("Annotation",htmlOutput("annotation_hint", inline = FALSE), plotOutput("annotationplotglobal", width="100%", height="auto"),htmlOutput("annotation_figure"),  value="annotation"),
                       tabPanel("Alignment Plot", verbatimTextOutput("alignment"), plotOutput("plot3", width="100%", height="auto"), value="ap"),
                       tabPanel("Categories",  div(DT::dataTableOutput("table_annotaion"), style = "font-size:80%"), plotOutput("annotationplot", width="100%", height="auto"), value="annot"),
 

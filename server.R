@@ -1,11 +1,9 @@
-library(shiny)
-library(ggplot2)
-
 shinyServer(function(input, output) {
+  source("download.functions.R")
+
   #################
-  # Load data from results folder
+  # Reactive
   #################
-  
   dataset <- reactive({
       # choose selected one 
       readData(paste(folder.path, input$dataset, sep="/"))
@@ -17,16 +15,37 @@ shinyServer(function(input, output) {
     
   # render again if input$player_name changes
   output$filters_UI <- renderUI({
-  #  input$dataset
-  dataset <- readData(paste(folder.path, input$dataset, sep="/"))
-    selectInput("samples", "Choose one or more datasets:", choices=levels(factor(dataset$sample)), selected=c(levels(factor(dataset$sample))[1]), multiple=T, width="100%")
+    dataset <- readData(paste(folder.path, input$dataset, sep="/"))
+#    selectInput("samples", "Choose one or more samples:", 
+#    choices=levels(factor(dataset$sample)), 
+#    selected=c(levels(factor(dataset()$sample))[1:length(unique(data$sample))]), 
+#    multiple=T, width="100%")
+    selectInput("samples", "Choose one or more samples:", 
+                choices=levels(factor(dataset$sample)), 
+                selected=c(levels(factor(dataset()$sample))[1]), 
+                multiple=T, width="100%")
   })
   
+  # render again if input$dofiltering changes
+  output$dependentselection <- renderUI({
+    if (input$dofiltering == "pvalue"){
+      sliderInput("pval", label = "p-value threshold", min = .001, 
+                  max = 1, value = 1)
+    } else {
+      sliderInput("ratio", label = "select ratio range to display", 
+                  min = round(min(data$ratio), digits = 2), 
+                  max = round(max(data$ratio), digits = 2), 
+                  value = c(round(min(data$ratio), digits = 2), 
+                            round(max(data$ratio), digits = 2)))
+    }
+  })
+  
+ 
   #################
-  # RENDER PLOTS
+  # ggplot functions
   #################
   
-  # Histogram
+  # generates a histogram
   doPlotHistogram <- function(dataset, input){
     p <- ggplot(dataset, aes(ratio, fill = sample)) +
       geom_histogram(bins = input$binSize) + theme_bw()
@@ -38,19 +57,19 @@ shinyServer(function(input, output) {
       mark.ratio <- dataset[input$table_rows_selected,]$ratio
       mark.name <- dataset[input$table_rows_selected,]$name
       p <- p + geom_vline(xintercept = mark.ratio)
-      #      p <- p + geom_text(aes(x=mark.ratio, label=mark.name, y=rep(1, mark.num)), colour="black", angle=90)
     }
     return(p)
   }
   
+  # this functions calls the create_msa_plot() function multiple times based
+  # on selected protein families
   doAlignmentPlot <- function(data, input){
     require(ggplot2)
     require(grid)
     require(gridExtra)
     fam_ids <- data$name
-    dnds <- paste(tmp.path,"/",input$dataset,"/",input$samples,"/dnds/", fam_ids,".txt.DnDsRatio.txt", sep="")
-    gap <- paste(tmp.path,"/", input$dataset,"/",input$samples,"/gap/", fam_ids,".gap.txt", sep="")
-    
+    dnds <- paste(tmp.path,"/",input$data,"/",input$samples,"/dnds/", fam_ids,".txt.DnDsRatio.txt", sep="")
+    gap <- paste(tmp.path,"/", input$data,"/",input$samples,"/gap/", fam_ids,".gap.txt", sep="")
     if(input$gap){
       p <- list()
       for(i in 1:length(dnds)){
@@ -67,10 +86,44 @@ shinyServer(function(input, output) {
     do.call(grid.arrange,p)
     return(p)
   }
- 
+  
+  # show TIGRFAM annotation for selected samples
+  doPlotAnnotationGlobal <- function(data, input){
+    if(substring(data$name, 1,4)[1] == "TIGR"){
+      require(gridExtra)
+      num <- as.data.frame(table(data$term))
+      num <- num[which(num$Freq > 0),]
+      p <- ggplot(num, aes(reorder(Var1, Freq), Freq)) + coord_flip()
+      p <- p + geom_bar(stat = "identity", fill="grey80", width=0.8) + theme_classic()
+      #p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      p <- p + labs(x = "", y="number of protein families annotated") 
+      if(input$pval < 1){
+        p <- p + ggtitle(paste("Number of protein families (p-value less than: ", input$pval, ")", sep=""))
+      } else {
+        p <- p + ggtitle("Number of protein families in dataset")
+      }
+      return(p)
+    }
+  }
+  
+  doPlotSample <- function(data, input){
+    require(ggplot2)
+    num <- as.data.frame(table(data$sample))
+    num$selected <- FALSE
+    for(i in 1:length(input$samples)){
+      num[which(num$Var1 == input$samples[i]),]$selected <- TRUE
+    }
+    p <- ggplot(num, aes(Var1, Freq, fill=selected)) 
+    p <- p + geom_bar(stat = "identity", width=0.8) + theme_classic()
+    p <- p + scale_fill_manual(breaks = c(TRUE, FALSE), values = c("grey80", "black")) + guides(fill=FALSE)
+    p <- p + labs(x = "Samples", y="# protein families") + ggtitle("Selected samples")
+    p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    return(p)
+  }
+  
   doAnnotationplot <- function(data, input){
     require(ggplot2)
-    
     df <- NULL
     df <- data.frame(term=unique(data$term), pval=rep(-1,length(unique(data$term))))
     df <- df[which(!is.na(df$term)),]
@@ -85,7 +138,6 @@ shinyServer(function(input, output) {
                  list(c("background", "selected"),
                       c("dN", "dS")))
       df[i,]$pval <- fisher.test(test.mat, alternative = "less")$p.value
-      
       i <- i + 1 
     }
     df$fdr <- p.adjust(df$pval, method="fdr")
@@ -116,12 +168,9 @@ shinyServer(function(input, output) {
     }
     return(p)
   }
-
   
   doPlotBox <- function(data, input){
     require(ggplot2)
-    
-    
     df <- NULL
     df <- data.frame(sample=unique(data$sample), pval=rep(-1,length(unique(data$sample))))
     df <- df[which(!is.na(df$sample)),]
@@ -150,11 +199,15 @@ shinyServer(function(input, output) {
     }
     
     if (input$highlightbox){
-     mark.ratio <- data[input$table_rows_selected,]$ratio
+      mark.ratio <- data[input$table_rows_selected,]$ratio
       p <- p + geom_hline(yintercept = mean(mark.ratio, na.rm=T))
     }
     return(p)
   }
+  
+  #################
+  # render graphics functions
+  #################
   
   output$plot1 <- renderPlot({
     data <-readData(paste(folder.path, input$dataset, sep="/"))
@@ -164,18 +217,25 @@ shinyServer(function(input, output) {
     print(p)
   }, height=700)
   
-  
   # Density plot (unused)
   output$plot2 <- renderPlot({
     p <- ggplot(dataset(), aes(ratio, fill = sample)) +
       geom_density(adjust=input$densityBw)
     print(p)
   }, height=700)
-
+  
   observe({
     if (input$close > 0) stopApp() # stop shiny
   })
-
+  
+  # boxplot
+  output$sampleplot <- renderPlot({
+    data <- readData(paste(folder.path, input$dataset, sep="/"))
+    p <- doPlotSample(data, input)
+    downloadableSamplePlot <<- p
+    print(p)
+  }, height=200)
+  
   # Alignment plot
   output$plot3 <- renderPlot({
     data <-readData(paste(folder.path, input$dataset, sep="/"))
@@ -195,11 +255,11 @@ shinyServer(function(input, output) {
     data <- readData(paste(folder.path, input$dataset, sep="/"))
     data <- data[which(data$fdr <= input$pval),]
     data <- data[which(data$sample == input$samples),]
-    p <- try(doPlotBox(data, input))
+    p <- doPlotBox(data, input)
     downloadableBoxplot <<- p
     print(p)
   }, height=700)
-
+  
   # boxplot
   output$annotationplot <- renderPlot({
     data <- readData(paste(folder.path, input$dataset, sep="/"))
@@ -210,6 +270,80 @@ shinyServer(function(input, output) {
     print(p)
   }, height=700)
   
+  # annotation plot
+  output$annotationplotglobal <- renderPlot({
+    data <- readData(paste(folder.path, input$dataset, sep="/"))
+    data <- data[which(data$fdr <= input$pval),]
+    if(length(input$samples) > 1){
+      subset <- NULL
+      data_pool <- NULL
+      for(i in 1:length(input$samples)){
+        subset <- data[which(data$sample == input$samples[i]),]
+        data_pool <- rbind(subset,data_pool)
+      }
+      data <- data_pool
+    } else {
+      data <- data[which(data$sample == input$samples),]
+    }
+    p <- doPlotAnnotationGlobal(data, input)
+    downloadableAnnotationGlobal <<- p
+    print(p)
+  }, height=400)
+  
+  #################
+  # render table functions
+  #################
+  
+  output$table_filtered <- DT::renderDataTable(
+    DT::datatable(dataset, options = list(paging = 25))
+  )
+  
+  output$table_annotaion <- DT::renderDataTable(
+    DT::datatable(annotation, options = list(paging = 25))
+  )
+  
+  output$table_sample <- DT::renderDataTable(
+    DT::datatable(sample_pval, options = list(paging = 25))
+  )
+  
+  output$table <- DT::renderDataTable(
+    DT::datatable(dataset, options = list(pageLength = 25))
+  )
+  
+  # Filter data based on selections
+  output$table <- DT::renderDataTable(DT::datatable({
+    require(pander)
+    data <- readData(paste(folder.path, input$dataset, sep="/"))
+    data <- data[which(data$fdr <= input$pval),]
+    if(length(input$samples) > 1){
+      subset <- NULL
+      data_pool <- NULL
+      for(i in 1:length(input$samples)){
+        subset <- data[which(data$sample == input$samples[i]),]
+        data_pool <- rbind(subset,data_pool)
+      }
+      data <- data_pool
+    } else {
+      data <- data[which(data$sample == input$samples),]
+    }
+    data$stars <- add.significance.stars(data$fdr)
+    data$sum_pN <- NULL
+    data$sum_pS <- NULL
+    data$role <- NULL
+    data$pvalue <- NULL
+    data$ratio <- round(data$ratio, digits=3)
+    #  colnames(data) <- c("family name", "dnds ratio", "significance lvl","adjusted pvalue", "dataset", "family description")
+    data$fdr <- round(data$fdr, digits=5)
+    num.name <<- nrow(data)
+    num.meanratio <<- round(mean(data$ratio, na.rm=T), digits=2)
+    num.sd <<- round(sd(data$ratio, na.rm=T), digits=2)
+    downloadObj <<- data # generate downloadable table
+    input$resetSelection 
+    data
+  }))
+  
+  
+  
   #################
   # RENDER TEXT
   #################
@@ -218,10 +352,11 @@ shinyServer(function(input, output) {
   output$selected = renderPrint({
     s = input$table_rows_selected
     if (length(s)) {
-      cat('These rows were selected:\n\n')
+      cat('These rows are selected:\n\n')
       cat(s, sep = ', ')
     }
   })
+  
   
   # print summary and selected rows
   output$summary <- renderPrint({  
@@ -243,8 +378,6 @@ shinyServer(function(input, output) {
       cat("\n")
       print(data.selection$name)
       cat("\n")
-      
-
       test.mat <-
         matrix(c(sum(data$sum_pN), sum(data.selection$sum_pN), sum(data.selection$sum_pS), sum(data$sum_pS)),
                nrow = 2,
@@ -255,7 +388,7 @@ shinyServer(function(input, output) {
       pval <- fisher.test(test.mat, alternative = "less")$p.value
       cat("one sided Fisher's test:")
       cat("\n")
-      ifelse(pval < 0.05, print(paste("difference is significant",pval)), print(paste("difference is not significant", pval)))
+      ifelse(pval < 0.05, print(paste("difference is significant",pval)), print(paste("difference is not significant (pvalue=", pval,")", sep="")))
       cat("\n")
     }
     
@@ -284,62 +417,34 @@ shinyServer(function(input, output) {
   
   
   #################
-  # RENDER TABLES
+  # RENDER html
   #################
   
-  output$table_filtered <- DT::renderDataTable(
-    DT::datatable(dataset, options = list(paging = 25))
-  )
+  # tab 1
+  # overview  tab
+  output$overview_hint <- renderText({paste("</br><font color=\"#008080\"><b>", "Hint: You can include or remove samples from your analysis. For this use the 'Choose one or more samples' form on the widget on the left side.</b></font></br></br>")})
   
-  output$table_annotaion <- DT::renderDataTable(
-    DT::datatable(annotation, options = list(paging = 25))
-  )
+  output$overview_hint2 <- renderText({paste("</br><font color=\"#008080\"><b>", "Hint: You can perform a one-sided Fisher's exact test by selecting protein families by clicking on the table.</b></font></br>") })
   
+  output$overview_table <- renderText({paste("Table:",num.name, " protein families found in", length(input$samples)," samples with a mean dN/dS ratio of", num.meanratio, " +- ", num.sd, "(SD). Categories based on HMM match with E-value 0.01. Only protein families with a FDR adjusted p-value of less than ", input$pval," are shown. Table generated with EDEN v.1.</br>")})
   
-  output$table_sample <- DT::renderDataTable(
-    DT::datatable(sample_pval, options = list(paging = 25))
-  )
+  # tab 2
+  # annotation tab
+  output$annotation_hint <- renderText({paste("<font color=\"#008080\"><b>", "Hint: You can specify a filter to show protein families that have a significant or high dn/ds ratio. For this use the slider 'p-value threshold' on the widget on the left side.</b></font>")})
   
-  output$table <- DT::renderDataTable(
-    DT::datatable(dataset, options = list(pageLength = 25))
-  )
+  output$annotation_figure <- renderText({paste("Figure: Number of protein families found in", length(input$samples)," samples for each category. Only protein families with a FDR adjusted p-value of less than ", input$pval," are shown. Figure generated with EDEN v.1.")})
   
-  # Filter data based on selections
-  output$table <- DT::renderDataTable(DT::datatable({
-    require(pander)
-    data <- readData(paste(folder.path, input$dataset, sep="/"))
-    data <- data[which(data$fdr <= input$pval),]
-    if(length(input$samples) > 1){
-      print("multiple samples selected")
-      subset <- NULL
-      data_pool <- NULL
-      for(i in 1:length(input$samples)){
-        print(paste("check to", input$samples[i], sep=" "))
-        subset <- data[which(data$sample == input$samples[i]),]
-        data_pool <- rbind(subset,data_pool)
-        print(paste("subset length is", nrow(subset), sep=" "))
-      }
-      data <- data_pool
-    } else {
-      data <- data[which(data$sample == input$samples),]
-      print("length is one")
+  #################
+  # download functions
+  #################
+  
+  # download main table on the first tab
+  output$dlTable <- downloadHandler(
+    filename="table.csv",
+    content = function(file) {
+      write.csv(downloadObj, file)
     }
- #   data$stars <- add.significance.stars(data$fdr)
-    data$sum_pN <- NULL
-    data$sum_pS <- NULL
-    data$role <- NULL
-    data$pvalue <- NULL
-    data$ratio <- round(data$ratio, digits=3)
-  #  colnames(data) <- c("family name", "dnds ratio", "significance lvl","adjusted pvalue", "dataset", "family description")
-    data$fdr <- round(data$fdr, digits=5)
-  #  downloadObj <<- data # generate downloadable table
-  #  input$resetSelection 
-    data
-  }))
-  
-  #################
-  # DOWNLOAD
-  #################
+  )
   
   # download histogram
   output$dlCurPlot <- downloadHandler(
@@ -381,14 +486,5 @@ shinyServer(function(input, output) {
       dev.off()
     }
   )
-  
-  output$dlTable <- downloadHandler(
-    filename="table.csv",
-    content = function(file) {
-      write.csv(downloadObj, file)
-    }
-  )
-  
-  
   
 })
