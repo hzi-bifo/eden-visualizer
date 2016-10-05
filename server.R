@@ -5,15 +5,6 @@
 
 shinyServer(function(input, output) {
 
-  ntext <- eventReactive(input$goButton, {
-    cat("started")
-    sys_out <- system("/home/eden/shiny_entrypoint.sh", intern=TRUE)
-  })
-  
-  output$nText <- renderText({
-    ntext()
-  })
-  
   #################
   # Reactive
   #################
@@ -26,15 +17,7 @@ shinyServer(function(input, output) {
   # render table functions
   #################
   
-  output$filetable <- reactiveTable(function() {
-    if (is.null(input$files)) {
-      # User has not uploaded a file yet
-      return(NULL)
-    }
-    
-    input$files
-  })
-  
+ 
   output$table_filtered <- DT::renderDataTable(
     DT::datatable(dataset, options = list(paging = 25))
   )
@@ -605,5 +588,24 @@ shinyServer(function(input, output) {
       dev.off()
     }
   )
+  
+  ntext <- eventReactive(input$goButton, {
+    cat("started")
+    out <- system("/home/eden/check.sh --faa_folder /home/eden/data/faa --ffn_folder /home/eden/data/ffn --cpu 4 --hmmfile /home/eden/data/annotation/annotation.hmm --output /home/eden/data/ko --gfam /home/eden/data/groups.txt", intern=TRUE)
+  })
+  
+  output$nText <- renderText({
+    ntext()
+  })
+  
+  output$filetable <- reactiveTable(function() {
+    if (is.null(input$files)) {
+      # User has not uploaded a file yet
+      return(NULL)
+    }
+    
+    input$files
+  })
+  
   
 })

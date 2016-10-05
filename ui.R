@@ -7,6 +7,7 @@
 library(shiny)
 library(ggplot2)
 library(zoo)
+library(digest)
 library(gridExtra)
 source("functions.R")
 source("version.R")
