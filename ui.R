@@ -12,12 +12,12 @@ source("functions.R")
 source("version.R")
 
 # no warnings
-options(warn=0)
+options(warn=-1)
 
 # set path variable
 if(file.exists("/home/eden/eden.sh")){
   # we are inside the docker container
-  packrat::on()
+ # packrat::on()
   tar.path <<- "/home/eden/data/tar"
   annotation.path <<- "/home/eden/data/annotation"
   tmp.path <<- "/srv/shiny-server/eden-visualizer/tmp/"
@@ -25,7 +25,6 @@ if(file.exists("/home/eden/eden.sh")){
   dir.create(folder.path)
 } else {
   # we are online hosted
-  packrat::on()
   folder.path <<- "data"
   annotation.path <<- "annotation"
   tar.path <<- "examples"
@@ -56,8 +55,17 @@ shinyUI(fluidPage(headerPanel_2(
       HTML(paste('eden selection viewer', eden.version)), h3, "test"),
       fluidRow(column(4,
                       wellPanel(
-                        
+
+
 # ----------- table panel
+conditionalPanel(condition="input.tsp=='start'",
+                 helpText("To start a eden run please upload .fasta files"),
+                 fileInput('files', 'Choose file to upload',
+                           accept = c(
+                             '.fasta'
+                           ), multiple=TRUE),
+                 actionButton('goButton',label = "Start analysis")
+                 ),
 conditionalPanel(
   condition="input.tsp=='overview' ||
 input.tsp=='annotation' || 
@@ -66,11 +74,8 @@ input.tsp=='annotation' ||
   input.tsp=='box' ||
   input.tsp=='categories' ",
   helpText("Please select the analysis you want to import."),
-  selectInput("dataset", "Select run:", 
-              choices= list.dirs(path = "data", 
-                                 full.names = FALSE, recursive = FALSE), 
-              selected=list.dirs(path = "csv", full.names = FALSE, 
-                                 recursive = FALSE)[1], multiple=F, width="100%"),
+
+  
   uiOutput('filters_UI'),
   selectInput('dofiltering', 
               label='Choose a way to filter matrix', 
@@ -90,6 +95,13 @@ conditionalPanel(
 ),
 
 wellPanel(
+  conditionalPanel(condition="input.tsp=='start'",#
+                   helpText("You can also select an previous eden run from the dropdown list"),
+                   selectInput("dataset", "Select run:", 
+                               choices= list.dirs(path = "data", 
+                                                  full.names = FALSE, recursive = FALSE), 
+                               selected=list.dirs(path = "csv", full.names = FALSE, 
+                                                  recursive = FALSE)[1], multiple=F, width="100%")),
   conditionalPanel(condition="input.tsp=='overview'",
                    downloadButton("dlTable", "Download Table", class="btn-block btn-primary")),
   
@@ -133,7 +145,8 @@ wellPanel(
 
 
 column(8,tabsetPanel(
-
+tabPanel("Start", tableOutput("filetable"), htmlOutput("nText"), value="start"), 
+  
 tabPanel("Overview",htmlOutput("overview_hint"),
          div(DT::dataTableOutput("table"),style = "font-size:80%"), 
          htmlOutput("overview_table"), 

@@ -5,6 +5,15 @@
 
 shinyServer(function(input, output) {
 
+  ntext <- eventReactive(input$goButton, {
+    cat("started")
+    sys_out <- system("/home/eden/shiny_entrypoint.sh", intern=TRUE)
+  })
+  
+  output$nText <- renderText({
+    ntext()
+  })
+  
   #################
   # Reactive
   #################
@@ -16,6 +25,15 @@ shinyServer(function(input, output) {
   #################
   # render table functions
   #################
+  
+  output$filetable <- reactiveTable(function() {
+    if (is.null(input$files)) {
+      # User has not uploaded a file yet
+      return(NULL)
+    }
+    
+    input$files
+  })
   
   output$table_filtered <- DT::renderDataTable(
     DT::datatable(dataset, options = list(paging = 25))
