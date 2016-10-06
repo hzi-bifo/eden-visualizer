@@ -2,7 +2,9 @@
 # shiny application to visualize EDEN output .tar files 
 # by Philipp C. Münch (pmu15@helmholtz-hzi.de)
 ################################################################################
-options(shiny.maxRequestSize = 50*1024^2) #max fasta input size is 50mb
+
+# set max file size for file upload
+options(shiny.maxRequestSize = 50*1024^2)
 
 shinyServer(function(input, output) {
 
@@ -16,13 +18,15 @@ shinyServer(function(input, output) {
     toggle(condition = (input$runtype!="newstart"), selector = "#tsp li a[data-value=box]")
   })
   
-
   #################
   # Reactive
   #################
   dataset <- reactive({
-      # choose selected one 
-      readData(paste(folder.path, input$dataset, sep="/"))
+      if(input$dataset[1]!=""){
+        readData(paste(folder.path, input$dataset, sep="/"))
+      } else {
+      #  dataset <- NULL
+      }
      
   })
   
@@ -33,8 +37,6 @@ shinyServer(function(input, output) {
 #  observe({
 #    toggle(condition = input$cond, selector = "#tsp li a[data-value=annotation]")
 #  })
-  
-  
  
   output$table_filtered <- DT::renderDataTable(
     DT::datatable(dataset, options = list(paging = 25))
@@ -187,9 +189,13 @@ shinyServer(function(input, output) {
   if(input$runtype == "newstart"){
     conditionalPanel(condition="input.tsp=='start'",
     helpText("To start a eden run please upload .fasta files"),
-    fileInput('files', 'Choose file to upload',
+    fileInput('files_faa', 'Choose .faa file to upload',
               accept = c(
-                '.fasta'
+                '.faa'
+              ), multiple=TRUE),
+    fileInput('files_ffn', 'Choose .ffn files to upload',
+              accept = c(
+                '.ffn'
               ), multiple=TRUE),
    actionButton('uploadButton',label = "Add files"),
    actionButton('checkButton',label = "Check files"),
@@ -470,9 +476,6 @@ shinyServer(function(input, output) {
   }, height=400)
   
 
-  
-  
-  
   #################
   # RENDER TEXT
   #################
@@ -636,15 +639,28 @@ shinyServer(function(input, output) {
     }
   )
   
-  
-  # move uploaded files (tmp) to destination folder
-
+  # move uploaded files (tmp) to destination folder dest folders must be chmod 777
   ntextupload <- eventReactive(input$uploadButton, {
-    dir.create(fasta.path)
-    infiles <- as.data.frame(input$files)
-    infiles$dest <- paste(fasta.path, infiles$name, sep="/")
-    file.rename(from = infiles$datapath, to = infiles$dest)
-    out <- "uploaded"
+    # process faa
+    dir.create(faa.path)
+    Sys.chmod(faa.path, mode = "0777", use_umask = TRUE)
+    infiles_faa <- as.data.frame(input$files_faa)
+    infiles_faa$dest <- paste(faa.path, infiles_faa$name, sep="/")
+    for (i in 1:nrow(infiles_faa)){
+      cmd <- paste("mv ",infiles_faa$datapath[i]," ", infiles_faa$dest[i], sep="")
+      err <- system(cmd,  intern = TRUE)
+    }
+    out <- paste(err)
+    # process ffn
+    dir.create(ffn.path)
+    Sys.chmod(ffn.path, mode = "0777", use_umask = TRUE)
+    infiles_ffn <- as.data.frame(input$files_ffn)
+    infiles_ffn$dest <- paste(ffn.path, infiles_ffn$name, sep="/")
+    for (i in 1:nrow(infiles_ffn)){
+      cmd <- paste("mv ",infiles_ffn$datapath[i]," ", infiles_ffn$dest[i], sep="")
+      err <- system(cmd,  intern = TRUE)
+    }
+    out <- paste(err)
   })
   
   ntextcheck <- eventReactive(input$checkButton, {
@@ -669,13 +685,20 @@ shinyServer(function(input, output) {
   })
   
 
-  output$filetable <- reactiveTable(function() {
-    if (is.null(input$files)) {
+  output$filetable_faa<- reactiveTable(function() {
+    if (is.null(input$files_faa)) {
       # User has not uploaded a file yet
       return(NULL)
     }
-  
-    input$files
+    input$files_faa
+  })
+
+  output$filetable_ffn<- reactiveTable(function() {
+    if (is.null(input$files_ffn)) {
+      # User has not uploaded a file yet
+      return(NULL)
+    }
+    input$files_ffn
   })
   
   

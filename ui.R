@@ -23,6 +23,8 @@ if(file.exists("/home/eden/eden.sh")){
   annotation.path <<- "/home/eden/data/annotation"
   fasta.path <<- "/home/eden/data/fasta"
   tmp.path <<- "/srv/shiny-server/eden-visualizer/tmp/"
+  faa.path <<- "/home/eden/data/faa"
+  ffn.path <<- "/home/eden/data/ffn"
   folder.path <<- "data"
   dir.create(folder.path)
 } else {
@@ -32,19 +34,21 @@ if(file.exists("/home/eden/eden.sh")){
   tar.path <<- "examples"
   tmp.path <<- "tmp"
   fasta.path <<- "fasta"
+  faa.path <<- "faa"
+  ffn.path <<- "ffn"
   dir.create("tmp")
   dir.create(folder.path)
 }
 
 # extract tar file on startup
-unTar(tar.path, folder.path)
+try(unTar(tar.path, folder.path))
 
 # initialize dataset
-dataset <<- readData(paste(folder.path,
-                           list.dirs(path = folder.path,
-                                     full.names = FALSE,
-                                     recursive = FALSE)[1], 
-                           sep="/")) 
+#dataset <<- readData(paste(folder.path,
+#                           list.dirs(path = folder.path,
+#                                     full.names = FALSE,
+#                                     recursive = FALSE)[1], 
+#                           sep="/")) 
 
 # define header
 headerPanel_2 <- function(title, h, windowTitle=title){    
@@ -145,7 +149,7 @@ wellPanel(
 
 
 column(8,tabsetPanel(
-tabPanel("Start", tableOutput("filetable"), htmlOutput("nTextupload"), htmlOutput("nTextcheck"), htmlOutput("nTexteden"), value="start"), 
+tabPanel("Start", tableOutput("filetable_faa"), tableOutput("filetable_ffn"), htmlOutput("nTextupload"), htmlOutput("nTextcheck"), htmlOutput("nTexteden"), value="start"), 
   
 tabPanel("Overview",htmlOutput("overview_hint"),
          div(DT::dataTableOutput("table"),style = "font-size:80%"), 
