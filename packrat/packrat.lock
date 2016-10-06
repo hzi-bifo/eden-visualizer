@@ -7,16 +7,39 @@ Repos: BioCsoft=http://bioconductor.org/packages/3.1/bioc,
     BioCextra=http://bioconductor.org/packages/3.1/extra,
     CRAN=https://cran.rstudio.com/
 
+Package: BiocGenerics
+Source: Bioconductor
+Version: 0.14.0
+Hash: 995043698526ca8aa30f40cf17d9ca85
+
+Package: Biostrings
+Source: Bioconductor
+Version: 2.36.4
+Hash: 41ea8910886a047c131c77504c1f6d84
+Requires: BiocGenerics, IRanges, S4Vectors, XVector, zlibbioc
+
 Package: DT
 Source: CRAN
 Version: 0.2
 Hash: 36b032203797956fedad5a25055016a9
 Requires: htmltools, htmlwidgets, magrittr
 
+Package: IRanges
+Source: Bioconductor
+Version: 2.2.9
+Hash: bc404521852d9254e004440b4b95f1e8
+Requires: BiocGenerics, S4Vectors
+
 Package: MASS
 Source: CRAN
 Version: 7.3-45
 Hash: 0650d5701aa7e369e77c9e2c8e1dc913
+
+Package: PKI
+Source: CRAN
+Version: 0.1-3
+Hash: aca3e459c659b6d8266538520f72ba19
+Requires: base64enc
 
 Package: R6
 Source: CRAN
@@ -28,6 +51,12 @@ Source: CRAN
 Version: 1.1-2
 Hash: c0d56cd15034f395874c870141870c25
 
+Package: RCurl
+Source: CRAN
+Version: 1.95-4.8
+Hash: 79c7d5a8684e44e0e3426d3093aa7d90
+Requires: bitops
+
 Package: RJSONIO
 Source: CRAN
 Version: 1.3-0
@@ -37,6 +66,23 @@ Package: Rcpp
 Source: CRAN
 Version: 0.12.4
 Hash: 115167d29098a4fd1e572fdbef809438
+
+Package: S4Vectors
+Source: Bioconductor
+Version: 0.6.6
+Hash: 5b088e1ef27a242c7204354287e37f43
+Requires: BiocGenerics
+
+Package: XVector
+Source: Bioconductor
+Version: 0.8.0
+Hash: 4455d52aa4caef732df502e1831b2d2e
+Requires: BiocGenerics, IRanges, S4Vectors
+
+Package: base64enc
+Source: CRAN
+Version: 0.1-3
+Hash: c590d29e555926af053055e23ee79efb
 
 Package: bitops
 Source: CRAN
@@ -185,11 +231,25 @@ Version: 1.8.4
 Hash: 96866957d40732d935f717727d5c80ba
 Requires: Rcpp
 
+Package: rJava
+Source: CRAN
+Version: 0.9-8
+
 Package: reshape2
 Source: CRAN
 Version: 1.4.1
 Hash: bda269da8b147b0beea2c0e16bdce20d
 Requires: Rcpp, plyr, stringr
+
+Package: rsconnect
+Source: github
+Version: 0.4.1.4
+Hash: c543adf37e793ee02edc48ad2f9c4dee
+Requires: PKI, RCurl, RJSONIO, digest, packrat, rstudioapi, yaml
+GithubRepo: rsconnect
+GithubUsername: rstudio
+GithubRef: v0.99
+GithubSha1: fcac892a69817febd7b655b189bf57193260cda0
 
 Package: rstudioapi
 Source: CRAN
@@ -219,6 +279,12 @@ Version: 1.0.0
 Hash: 2676dd5f88890910962b733b0f9540e1
 Requires: magrittr, stringi
 
+Package: venneuler
+Source: CRAN
+Version: 1.1-0
+Hash: c1a4fa76085e34423345a09241b2df03
+Requires: rJava
+
 Package: whisker
 Source: CRAN
 Version: 0.3-2
@@ -238,6 +304,11 @@ Package: yaml
 Source: CRAN
 Version: 2.1.13
 Hash: 4854ccabebc225e8a7309fb4a74980de
+
+Package: zlibbioc
+Source: Bioconductor
+Version: 1.14.0
+Hash: 8dea98fa34593f5e70a1944234eba1d4
 
 Package: zoo
 Source: CRAN
