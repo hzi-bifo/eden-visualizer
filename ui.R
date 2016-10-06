@@ -7,8 +7,8 @@
 library(shiny)
 library(ggplot2)
 library(zoo)
-library(digest)
 library(gridExtra)
+library(shinyjs)
 source("functions.R")
 source("version.R")
 
@@ -21,6 +21,7 @@ if(file.exists("/home/eden/eden.sh")){
  # packrat::on()
   tar.path <<- "/home/eden/data/tar"
   annotation.path <<- "/home/eden/data/annotation"
+  fasta.path <<- "/home/eden/data/fasta"
   tmp.path <<- "/srv/shiny-server/eden-visualizer/tmp/"
   folder.path <<- "data"
   dir.create(folder.path)
@@ -30,6 +31,7 @@ if(file.exists("/home/eden/eden.sh")){
   annotation.path <<- "annotation"
   tar.path <<- "examples"
   tmp.path <<- "tmp"
+  fasta.path <<- "fasta"
   dir.create("tmp")
   dir.create(folder.path)
 }
@@ -53,20 +55,22 @@ headerPanel_2 <- function(title, h, windowTitle=title){
 }
 
 shinyUI(fluidPage(headerPanel_2(
-      HTML(paste('eden selection viewer', eden.version)), h3, "test"),
-      fluidRow(column(4,
+      HTML(paste('eden ', eden.version)), h3, "eden"),
+      fluidRow( useShinyjs(), column(4,
                       wellPanel(
 
 
 # ----------- table panel
 conditionalPanel(condition="input.tsp=='start'",
-                 helpText("To start a eden run please upload .fasta files"),
-                 fileInput('files', 'Choose file to upload',
-                           accept = c(
-                             '.fasta'
-                           ), multiple=TRUE),
-                 actionButton('goButton',label = "Start analysis")
+                 selectInput("runtype", label = "how to start", 
+                             choices = list("Start new run" = "newstart", "Select previous run" = "previousstart"),
+                             selected = "newstart"),
+                 uiOutput("start_UI")
                  ),
+
+conditionalPanel(condition="input.tsp=='start'",
+                 uiOutput("startdown_UI")),
+
 conditionalPanel(
   condition="input.tsp=='overview' ||
 input.tsp=='annotation' || 
@@ -96,13 +100,8 @@ conditionalPanel(
 ),
 
 wellPanel(
-  conditionalPanel(condition="input.tsp=='start'",#
-                   helpText("You can also select an previous eden run from the dropdown list"),
-                   selectInput("dataset", "Select run:", 
-                               choices= list.dirs(path = "data", 
-                                                  full.names = FALSE, recursive = FALSE), 
-                               selected=list.dirs(path = "csv", full.names = FALSE, 
-                                                  recursive = FALSE)[1], multiple=F, width="100%")),
+  conditionalPanel(condition="input.tsp=='start'",  checkboxInput("parameter", "some parametes here", TRUE)),
+  
   conditionalPanel(condition="input.tsp=='overview'",
                    downloadButton("dlTable", "Download Table", class="btn-block btn-primary")),
   
@@ -146,7 +145,7 @@ wellPanel(
 
 
 column(8,tabsetPanel(
-tabPanel("Start", tableOutput("filetable"), htmlOutput("nText"), value="start"), 
+tabPanel("Start", tableOutput("filetable"), htmlOutput("nTextupload"), htmlOutput("nTextcheck"), htmlOutput("nTexteden"), value="start"), 
   
 tabPanel("Overview",htmlOutput("overview_hint"),
          div(DT::dataTableOutput("table"),style = "font-size:80%"), 

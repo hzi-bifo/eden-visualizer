@@ -2,8 +2,20 @@
 # shiny application to visualize EDEN output .tar files 
 # by Philipp C. Münch (pmu15@helmholtz-hzi.de)
 ################################################################################
+options(shiny.maxRequestSize = 50*1024^2) #max fasta input size is 50mb
 
 shinyServer(function(input, output) {
+
+  # check if dataset is there and only then show the tab panels
+  observe({
+    toggle(condition = (input$runtype!="newstart"), selector = "#tsp li a[data-value=annotation]")
+    toggle(condition = (input$runtype!="newstart"), selector = "#tsp li a[data-value=overview]")
+    toggle(condition = (input$runtype!="newstart"), selector = "#tsp li a[data-value=alignment]")
+    toggle(condition = (input$runtype!="newstart"), selector = "#tsp li a[data-value=categories]")
+    toggle(condition = (input$runtype!="newstart"), selector = "#tsp li a[data-value=histogram]")
+    toggle(condition = (input$runtype!="newstart"), selector = "#tsp li a[data-value=box]")
+  })
+  
 
   #################
   # Reactive
@@ -11,11 +23,17 @@ shinyServer(function(input, output) {
   dataset <- reactive({
       # choose selected one 
       readData(paste(folder.path, input$dataset, sep="/"))
+     
   })
   
   #################
   # render table functions
   #################
+  # check if annoation is provided and only then show the annotation panels
+#  observe({
+#    toggle(condition = input$cond, selector = "#tsp li a[data-value=annotation]")
+#  })
+  
   
  
   output$table_filtered <- DT::renderDataTable(
@@ -163,6 +181,35 @@ shinyServer(function(input, output) {
                             round(max(data$ratio), digits = 2)))
     }
   })
+  
+  # render again if input$player_name changes
+  output$start_UI <- renderUI({
+  if(input$runtype == "newstart"){
+    conditionalPanel(condition="input.tsp=='start'",
+    helpText("To start a eden run please upload .fasta files"),
+    fileInput('files', 'Choose file to upload',
+              accept = c(
+                '.fasta'
+              ), multiple=TRUE),
+   actionButton('uploadButton',label = "Add files"),
+   actionButton('checkButton',label = "Check files"),
+   actionButton('goButton',label = "Start analysis")
+  )}
+  })
+  
+  output$startdown_UI <- renderUI({
+    if(input$runtype != "newstart"){
+      conditionalPanel(condition="input.tsp=='start'",#
+                       helpText("You can also select an previous eden run from the dropdown list"),
+                       selectInput("dataset", "Select run:", 
+                                   choices= list.dirs(path = "data", 
+                                                      full.names = FALSE, recursive = FALSE), 
+                                   selected=list.dirs(path = "csv", full.names = FALSE, 
+                                                      recursive = FALSE)[1], multiple=F, width="100%"))
+      }
+  })
+  
+  
   
   # render again if input$dofiltering changes
   output$colorpoints <- renderUI({
@@ -589,21 +636,45 @@ shinyServer(function(input, output) {
     }
   )
   
-  ntext <- eventReactive(input$goButton, {
-    cat("started")
-    out <- system("/home/eden/check.sh --faa_folder /home/eden/data/faa --ffn_folder /home/eden/data/ffn --cpu 4 --hmmfile /home/eden/data/annotation/annotation.hmm --output /home/eden/data/ko --gfam /home/eden/data/groups.txt", intern=TRUE)
+  
+  # move uploaded files (tmp) to destination folder
+
+  ntextupload <- eventReactive(input$uploadButton, {
+    dir.create(fasta.path)
+    infiles <- as.data.frame(input$files)
+    infiles$dest <- paste(fasta.path, infiles$name, sep="/")
+    file.rename(from = infiles$datapath, to = infiles$dest)
+    out <- "uploaded"
   })
   
-  output$nText <- renderText({
-    ntext()
+  ntextcheck <- eventReactive(input$checkButton, {
+  out <- system("/home/eden/check.sh --faa_folder /home/eden/data/faa --ffn_folder /home/eden/data/ffn --cpu 4 --hmmfile /home/eden/data/annotation/annotation.hmm --output /home/eden/data/ko --gfam /home/eden/data/groups.txt", intern=TRUE)
   })
   
+  ntexteden <- eventReactive(input$goButton, {
+    out <- system("/home/eden/eden.sh --docker --cpu_number 4 --gap_threshold 0.8 --test --name shiny", intern=TRUE)
+  })
+  
+  output$nTextupload <- renderText({
+    ntextupload()
+  })
+  
+  
+  output$nTextcheck <- renderText({
+    ntextcheck()
+  })
+  
+  output$nTexteden <- renderText({
+    ntexteden()
+  })
+  
+
   output$filetable <- reactiveTable(function() {
     if (is.null(input$files)) {
       # User has not uploaded a file yet
       return(NULL)
     }
-    
+  
     input$files
   })
   
