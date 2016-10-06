@@ -6,7 +6,7 @@
 # set max file size for file upload
 options(shiny.maxRequestSize = 50*1024^2)
 
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
 
   # check if dataset is there and only then show the tab panels
   observe({
@@ -664,11 +664,33 @@ shinyServer(function(input, output) {
   })
   
   ntextcheck <- eventReactive(input$checkButton, {
-  out <- system("/home/eden/check.sh --faa_folder /home/eden/data/faa --ffn_folder /home/eden/data/ffn --cpu 4 --hmmfile /home/eden/data/annotation/annotation.hmm --output /home/eden/data/ko --gfam /home/eden/data/groups.txt", intern=TRUE)
+    std <- system2("/home/eden/run_check.sh", stdout=TRUE,stderr=TRUE)
   })
   
   ntexteden <- eventReactive(input$goButton, {
-    out <- system("/home/eden/eden.sh --docker --cpu_number 4 --gap_threshold 0.8 --test --name shiny", intern=TRUE)
+    #out <- system("/home/eden/eden.sh --docker --cpu_number 4 --gap_threshold 0.8 --test --name shiny", intern=TRUE)
+  
+    })
+  
+  
+  
+  # Function to get new log entries
+  get_new_log <- function(){
+    data <- read.table(log.path)
+    return(data)
+  }
+  
+  # Initialize log
+  my_log<<- get_new_log()
+  
+  # Function to update my_data
+  update_log <- function(){
+    my_log <<- my_log
+  }
+  
+  output$log = renderTable({
+    invalidateLater(millis=5000, session)
+    update_log()
   })
   
   output$nTextupload <- renderText({
@@ -701,5 +723,8 @@ shinyServer(function(input, output) {
     input$files_ffn
   })
   
+  ##### log
+  ##### 
+
   
 })

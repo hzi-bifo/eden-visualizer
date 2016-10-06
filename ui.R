@@ -26,6 +26,7 @@ if(file.exists("/home/eden/eden.sh")){
   faa.path <<- "/home/eden/data/faa"
   ffn.path <<- "/home/eden/data/ffn"
   folder.path <<- "data"
+  log.path <<- "/home/eden/log.txt"
   dir.create(folder.path)
 } else {
   # we are online hosted
@@ -34,6 +35,7 @@ if(file.exists("/home/eden/eden.sh")){
   tar.path <<- "examples"
   tmp.path <<- "tmp"
   fasta.path <<- "fasta"
+  log.path <<- "log.txt"
   faa.path <<- "faa"
   ffn.path <<- "ffn"
   dir.create("tmp")
@@ -149,7 +151,7 @@ wellPanel(
 
 
 column(8,tabsetPanel(
-tabPanel("Start", tableOutput("filetable_faa"), tableOutput("filetable_ffn"), htmlOutput("nTextupload"), htmlOutput("nTextcheck"), htmlOutput("nTexteden"), value="start"), 
+tabPanel("Start", tableOutput("filetable_faa"),tableOutput("log"), tableOutput("filetable_ffn"), htmlOutput("nTextupload"), htmlOutput("nTextcheck"), htmlOutput("nTexteden"), value="start"), 
   
 tabPanel("Overview",htmlOutput("overview_hint"),
          div(DT::dataTableOutput("table"),style = "font-size:80%"), 
