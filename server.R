@@ -681,11 +681,11 @@ shinyServer(function(input, output, session) {
   }
   
   # Initialize log
-  my_log<<- get_new_log()
+  my_log <<- get_new_log()
   
   # Function to update my_data
   update_log <- function(){
-    my_log <<- my_log
+    my_log <<- get_new_log()
   }
   
   output$log = renderTable({
