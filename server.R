@@ -18,6 +18,11 @@ shinyServer(function(input, output, session) {
     toggle(condition = (input$runtype!="newstart"), selector = "#tsp li a[data-value=box]")
   })
   
+  # check if dataset is there and only then show the tab panels
+  observe({
+    toggle(condition = (input$runtype=="newstart"), selector = "#tsp li a[data-value=log]")
+  })
+  
   #################
   # Reactive
   #################
@@ -197,7 +202,7 @@ shinyServer(function(input, output, session) {
               accept = c(
                 '.ffn'
               ), multiple=TRUE),
-   actionButton('uploadButton',label = "Add files"),
+ #  actionButton('uploadButton',label = "Add files"),
    actionButton('checkButton',label = "Check files"),
    actionButton('goButton',label = "Start analysis"),
    helpText("If the test mode is on, eden runs only on a random subset of gene families"),
@@ -649,30 +654,7 @@ shinyServer(function(input, output, session) {
     }
   )
   
-  # move uploaded files (tmp) to destination folder dest folders must be chmod 777
-  ntextupload <- eventReactive(input$uploadButton, {
-    # process faa
-    dir.create(faa.path)
-    Sys.chmod(faa.path, mode = "0777", use_umask = TRUE)
-    infiles_faa <- as.data.frame(input$files_faa)
-    infiles_faa$dest <- paste(faa.path, infiles_faa$name, sep="/")
-    for (i in 1:nrow(infiles_faa)){
-      cmd <- paste("mv ",infiles_faa$datapath[i]," ", infiles_faa$dest[i], sep="")
-      err <- system(cmd,  intern = TRUE)
-    }
-    out <- paste(err)
-    # process ffn
-    dir.create(ffn.path)
-    Sys.chmod(ffn.path, mode = "0777", use_umask = TRUE)
-    infiles_ffn <- as.data.frame(input$files_ffn)
-    infiles_ffn$dest <- paste(ffn.path, infiles_ffn$name, sep="/")
-    for (i in 1:nrow(infiles_ffn)){
-      cmd <- paste("mv ",infiles_ffn$datapath[i]," ", infiles_ffn$dest[i], sep="")
-      err <- system(cmd,  intern = TRUE)
-    }
-    out <- paste(err)
-  })
-  
+
   ntextcheck <- eventReactive(input$checkButton, {
     std <- system2("/home/eden/start_check.sh", stdout=TRUE,stderr=TRUE)
   })
@@ -719,6 +701,16 @@ shinyServer(function(input, output, session) {
       # User has not uploaded a file yet
       return(NULL)
     }
+    # process faa
+    dir.create(faa.path)
+    Sys.chmod(faa.path, mode = "0777", use_umask = TRUE)
+    infiles_faa <- as.data.frame(input$files_faa)
+    infiles_faa$dest <- paste(faa.path, infiles_faa$name, sep="/")
+    for (i in 1:nrow(infiles_faa)){
+      cmd <- paste("mv ",infiles_faa$datapath[i]," ", infiles_faa$dest[i], sep="")
+      err <- system(cmd,  intern = TRUE)
+    }
+    system2("echo",paste('";;faa files added" >> ',log.path, sep=""))
     input$files_faa
   })
 
@@ -727,6 +719,17 @@ shinyServer(function(input, output, session) {
       # User has not uploaded a file yet
       return(NULL)
     }
+    # process ffn
+    dir.create(ffn.path)
+    Sys.chmod(ffn.path, mode = "0777", use_umask = TRUE)
+    infiles_ffn <- as.data.frame(input$files_ffn)
+    infiles_ffn$dest <- paste(ffn.path, infiles_ffn$name, sep="/")
+    for (i in 1:nrow(infiles_ffn)){
+      cmd <- paste("mv ",infiles_ffn$datapath[i]," ", infiles_ffn$dest[i], sep="")
+      err <- system(cmd,  intern = TRUE)
+    }
+    out <- paste(err)
+    system2("echo",paste('";;ffn files added" >> ',log.path, sep=""))
     input$files_ffn
   })
   
