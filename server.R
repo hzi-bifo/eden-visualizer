@@ -664,7 +664,7 @@ shinyServer(function(input, output, session) {
   })
   
   ntextcheck <- eventReactive(input$checkButton, {
-    std <- system2("/home/eden/run_check.sh", stdout=TRUE,stderr=TRUE)
+    std <- system2("/home/eden/start_check.sh", stdout=TRUE,stderr=TRUE)
   })
   
   ntexteden <- eventReactive(input$goButton, {
@@ -676,7 +676,7 @@ shinyServer(function(input, output, session) {
   
   # Function to get new log entries
   get_new_log <- function(){
-    data <- read.table(log.path)
+    data <- read.table(log.path, header=F, sep=";")
     return(data)
   }
   
