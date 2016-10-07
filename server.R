@@ -201,13 +201,13 @@ shinyServer(function(input, output, session) {
   # render again if input$player_name changes
   output$start_UI_samples <- renderUI({
     if(input$analysistype=="comparative"){
-      conditionalPanel(condition="input.tsp=='start'",
+      conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",
                        helpText("For a comparative analysis please provide information which samples should be pooled together"),
-                       fileInput('files_samples', 'Upload a sample description file (not required)',
+                       fileInput('file_sample', 'Upload a sample description file (not required)',
                                  accept = c(
                                    '.txt'
-                                 ), multiple=FALSE),
-                       checkboxInput("eden_use_mgm", "find ORFs with MetaGeneMark", FALSE)
+                                 ), multiple=FALSE)#,
+                    #   checkboxInput("eden_use_mgm", "find ORFs with MetaGeneMark", FALSE)
       )}
   })
   
@@ -215,7 +215,7 @@ shinyServer(function(input, output, session) {
   # render again if input$player_name changes
   output$start_UI <- renderUI({
   if(input$runtype == "newstart"){
-    conditionalPanel(condition="input.tsp=='start'",
+    conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",
     helpText("To start a eden run please upload .fasta files"),
     fileInput('files_faa', 'Choose .faa file to upload',
               accept = c(
@@ -241,14 +241,14 @@ shinyServer(function(input, output, session) {
    
    textInput("eden_run_cpus", label = "Number of CPUs", value = "4"),
    sliderInput("eden_run_gap", label = "Gap Filter (in %)", min = 0, 
-               max = 100, value = 80),
-   checkboxInput("eden_use_mgm", "find ORFs with MetaGeneMark", FALSE)
+               max = 100, value = 80)#,
+   #checkboxInput("eden_use_mgm", "find ORFs with MetaGeneMark", FALSE)
   )}
   })
   
   output$startdown_UI <- renderUI({
     if(input$runtype != "newstart"){
-      conditionalPanel(condition="input.tsp=='start'",#
+      conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",#
                        helpText("You can also select an previous eden run from the dropdown list"),
                        selectInput("dataset", "Select run:", 
                                    choices= list.dirs(path = "data", 
@@ -758,6 +758,19 @@ shinyServer(function(input, output, session) {
     }
     system2("echo",paste('";;faa files added" >> ',log.path, sep=""))
     input$files_faa
+  })
+
+  # move input sample.txt file and show table  
+  output$filetable_sample <- reactiveTable(function() {
+    if (is.null(input$file_sample)) {
+      # User has not uploaded a file yet
+      return(NULL)
+    }
+    infiles_sample <- as.data.frame(input$file_sample)
+    cmd <- paste("mv ",infiles_sample$datapath[1], sample.path, sep="")
+    err <- system(cmd,  intern = TRUE)
+    system2("echo",paste('";;sample file added" >> ',log.path, sep=""))
+    input$file_sample
   })
 
   output$filetable_ffn<- reactiveTable(function() {

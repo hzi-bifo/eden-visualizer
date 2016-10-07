@@ -25,6 +25,7 @@ if(file.exists("/home/eden/eden.sh")){
   tmp.path <<- "/srv/shiny-server/eden-visualizer/tmp/"
   faa.path <<- "/home/eden/data/faa"
   ffn.path <<- "/home/eden/data/ffn"
+  sample.path <<- "/home/eden/data/samples.txt"
   folder.path <<- "data"
   log.path <<- "/home/eden/log.txt"
   dir.create(folder.path)
@@ -36,6 +37,7 @@ if(file.exists("/home/eden/eden.sh")){
   tmp.path <<- "tmp"
   fasta.path <<- "fasta"
   log.path <<- "log.txt"
+  sample.path <<- "samples.txt"
   faa.path <<- "faa"
   ffn.path <<- "ffn"
   dir.create("tmp")
@@ -74,7 +76,7 @@ conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",
                              selected = "newstart")
                  ),
 
-conditionalPanel(condition="input.tsp=='start'",
+conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",
                  uiOutput("startdown_UI")),
 
 conditionalPanel(
@@ -160,6 +162,7 @@ tabPanel("eden log",
          htmlOutput("log_hint"),
          tableOutput("filetable_faa"),
          tableOutput("filetable_ffn"), 
+         tableOutput("filetable_sample"), 
          tableOutput("log"),
   #       htmlOutput("nTextupload"), 
          htmlOutput("nTextcheck"), 
