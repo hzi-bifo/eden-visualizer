@@ -70,9 +70,9 @@ shinyUI(fluidPage(headerPanel_2(
 
 # ----------- table panel
 conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",
-                 helpText("Choose if you want to start a new eden run or analyse a completed run."),
-                 selectInput("runtype", label = "Select mode", 
-                             choices = list("Start new run" = "newstart", "Select previous run" = "previousstart"),
+                 helpText("Step 1: choose if you want to start a new eden run or inspect a finished run"),
+                 selectInput("runtype", label = "", 
+                             choices = list("start a new eden analysis" = "newstart", "inspect an finished run" = "previousstart"),
                              selected = "newstart")
                  ),
 
@@ -165,8 +165,9 @@ tabPanel("eden log",
          tableOutput("filetable_sample"), 
          tableOutput("log"),
   #       htmlOutput("nTextupload"), 
-         htmlOutput("nTextcheck"), 
-         htmlOutput("nTexteden"),
+  htmlOutput("nTexteden"),       
+  htmlOutput("nTextcheck"), 
+        
          value="log"), 
   
 tabPanel("Overview",htmlOutput("overview_hint"),

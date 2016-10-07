@@ -207,7 +207,7 @@ shinyServer(function(input, output, session) {
     if(input$analysistype=="comparative"){
       conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",
                        helpText("For a comparative analysis please provide information which samples should be pooled together"),
-                       fileInput('file_sample', 'Upload a sample description file (not required)',
+                       fileInput('file_sample', 'upload a sample description file',
                                  accept = c(
                                    '.txt'
                                  ), multiple=FALSE)#,
@@ -220,32 +220,38 @@ shinyServer(function(input, output, session) {
   output$start_UI <- renderUI({
   if(input$runtype == "newstart"){
     conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",
-    helpText("To start a eden run please upload .fasta files"),
-    fileInput('files_faa', 'Choose .faa file to upload',
+    helpText("Step 2: file upload"),
+    fileInput('files_faa', 'select one or more amino acid files (.faa)',
               accept = c(
                 '.faa'
               ), multiple=TRUE),
-    fileInput('files_ffn', 'Choose .ffn files to upload',
+    fileInput('files_ffn', 'select one or more corresponding nucleotide files (.ffn)',
               accept = c(
                 '.ffn'
               ), multiple=TRUE),
+    HTML('<hr>'),
  #  actionButton('uploadButton',label = "Add files"),
-
- selectInput("analysistype", label = "Select analysis type", 
+ helpText("Step 3: select how the files are processed. If you want to perform a comparative analysis you have to specify which samples are pooled together. "),
+ selectInput("analysistype", label = "analysis type", 
               choices = list("pooled analysis" = "pooled", "comparative analysis" = "comparative"),
               selected = "pooled analysis"),
  uiOutput("start_UI_samples"),
+ HTML('<hr>'),
  
-   actionButton('checkButton',label = "Check files"),
-   actionButton('goButton',label = "Start analysis"),
-   helpText("If the test mode is on, eden runs only on a random subset of gene families"),
-   checkboxInput("eden_test_mode", "test mode", FALSE),
-   helpText("Give the analysis a name that you can identify it later"),
-   textInput("eden_run_name", label = "Name of eden run", value = "eden_run_1"),
+   helpText("Step 4: specify name and thresholds"),
+   textInput("eden_run_name", label = "name your analysis run", value = "eden_run_1"),
    
-   textInput("eden_run_cpus", label = "Number of CPUs", value = "4"),
-   sliderInput("eden_run_gap", label = "Gap Filter (in %)", min = 0, 
-               max = 100, value = 80)#,
+   textInput("eden_run_cpus", label = "number of CPUs", value = "4"),
+   sliderInput("eden_run_gap", label = "gap filter", min = 0, 
+               max = 100, value = 80),
+ helpText("If the test mode is on, eden runs only on a random subset of gene families"),
+ HTML('<hr>'),
+
+ helpText("Step 5: click start"),
+
+ actionButton('checkButton',label = "Check files"),
+ actionButton('goButton',label = "Start analysis"),
+ checkboxInput("eden_test_mode", "test mode", FALSE)
    #checkboxInput("eden_use_mgm", "find ORFs with MetaGeneMark", FALSE)
   )}
   })
