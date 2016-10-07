@@ -668,11 +668,8 @@ shinyServer(function(input, output, session) {
   })
   
   ntexteden <- eventReactive(input$goButton, {
-    #out <- system("/home/eden/eden.sh --docker --cpu_number 4 --gap_threshold 0.8 --test --name shiny", intern=TRUE)
-  
-    })
-  
-  
+    std <- system2("/home/eden/start_eden.sh", stdout=TRUE,stderr=TRUE)
+  })
   
   # Function to get new log entries
   get_new_log <- function(){
