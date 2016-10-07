@@ -74,7 +74,7 @@ shinyServer(function(input, output, session) {
         data.term <- data[which(data$term == term),]
         data.nonterm <- data[which(data$term != term),]
         test.mat <-
-          matrix(c(sum(data.nonterm$sum_pN), sum(data.term$sum_pN), sum(data.term$sum_pS), sum(data.nonterm$sum_pS)),
+          matrix(c(sum(data.term$sum_pN), sum(data.term$sum_pS), sum(data.nonterm$sum_pN), sum(data.nonterm$sum_pS)),
                  nrow = 2,
                  dimnames =
                    list(c("background", "selected"),
@@ -84,6 +84,10 @@ shinyServer(function(input, output, session) {
         i <- i + 1 
       }
       df$fdr <- p.adjust(df$pval, method="fdr")
+      
+      df$fdr <- round(df$fdr,digits=6)
+      df$star <- add.significance.stars(df$fdr)
+      df$pval <- NULL
       df
     }))
   
@@ -300,12 +304,14 @@ shinyServer(function(input, output, session) {
     gap <- paste(tmp.path,"/", input$dataset[1],"/",input$samples,"/gap/", fam_ids,".gap.txt", sep="")
     if(input$points){
       if(input$gap){
+        # get list of ggplot obj with gap color
         p <- list()
         for(i in 1:length(dnds)){
           p[[i]] <- create_msa_plot(dnds_path = dnds[i], 
                                     gap_path = gap[i],  gapcolor=T)
         }
       } else {
+        # get list of ggplot obj without gap color
         p <- list()
         for(i in 1:length(dnds)){
           p[[i]] <- create_msa_plot(dnds_path = dnds[i], 
