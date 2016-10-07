@@ -68,10 +68,10 @@ shinyUI(fluidPage(headerPanel_2(
 
 # ----------- table panel
 conditionalPanel(condition="input.tsp=='start'",
-                 selectInput("runtype", label = "how to start", 
+                 helpText("Choose if you want to start a new eden run or analyse a completed run."),
+                 selectInput("runtype", label = "Select mode", 
                              choices = list("Start new run" = "newstart", "Select previous run" = "previousstart"),
-                             selected = "newstart"),
-                 uiOutput("start_UI")
+                             selected = "newstart")
                  ),
 
 conditionalPanel(condition="input.tsp=='start'",
@@ -106,7 +106,10 @@ conditionalPanel(
 ),
 
 wellPanel(
-  conditionalPanel(condition="input.tsp=='start'",  checkboxInput("parameter", "some parametes here", TRUE)),
+  conditionalPanel(condition="input.tsp=='start'",
+                   uiOutput("start_UI")
+                  
+                   ),
   
   conditionalPanel(condition="input.tsp=='overview'",
                    downloadButton("dlTable", "Download Table", class="btn-block btn-primary")),
@@ -151,7 +154,15 @@ wellPanel(
 
 
 column(8,tabsetPanel(
-tabPanel("Start", tableOutput("filetable_faa"),tableOutput("log"), tableOutput("filetable_ffn"), htmlOutput("nTextupload"), htmlOutput("nTextcheck"), htmlOutput("nTexteden"), value="start"), 
+tabPanel("eden log",
+         htmlOutput("log_hint"),
+         tableOutput("log"),
+#         tableOutput("filetable_faa")
+ #        tableOutput("filetable_ffn"), 
+#         htmlOutput("nTextupload"), 
+#         htmlOutput("nTextcheck"), 
+#         htmlOutput("nTexteden"),
+         value="start"), 
   
 tabPanel("Overview",htmlOutput("overview_hint"),
          div(DT::dataTableOutput("table"),style = "font-size:80%"), 
@@ -186,6 +197,4 @@ tabPanel("Boxplot",h4(""),
          value="box"),id="tsp")
  
 ))
-                    
-
 ))

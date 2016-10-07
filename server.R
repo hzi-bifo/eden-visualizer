@@ -199,7 +199,16 @@ shinyServer(function(input, output, session) {
               ), multiple=TRUE),
    actionButton('uploadButton',label = "Add files"),
    actionButton('checkButton',label = "Check files"),
-   actionButton('goButton',label = "Start analysis")
+   actionButton('goButton',label = "Start analysis"),
+   helpText("If the test mode is on, eden runs only on a random subset of gene families"),
+   checkboxInput("eden_test_mode", "test mode", FALSE),
+   helpText("Give the analysis a name that you can identify it later"),
+   textInput("eden_run_name", label = "Name of eden run", value = "eden_run_1"),
+   
+   textInput("eden_run_cpus", label = "Number of CPUs", value = "4"),
+   sliderInput("eden_run_gap", label = "Gap Filter (in %)", min = 0, 
+               max = 100, value = 80),
+   checkboxInput("eden_use_mgm", "find ORFs with MetaGeneMark", FALSE)
   )}
   })
   
@@ -553,6 +562,7 @@ shinyServer(function(input, output, session) {
   #################
   # RENDER html
   #################
+  output$log_hint <- renderText({paste("</br><font color=\"#008080\"><b>", "After you start the analysis this area will be updated in will show the current state of your analysis run.</b></font></br></br>")})
   
   # tab 1
   # overview  tab
@@ -668,7 +678,7 @@ shinyServer(function(input, output, session) {
   })
   
   ntexteden <- eventReactive(input$goButton, {
-    std <- system2("/home/eden/start_eden.sh", stdout=TRUE,stderr=TRUE)
+    std2 <- system2("/home/eden/start_eden.sh", stdout=TRUE,stderr=TRUE)
   })
   
   # Function to get new log entries
