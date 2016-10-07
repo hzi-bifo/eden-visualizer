@@ -108,7 +108,6 @@ conditionalPanel(
 wellPanel(
   conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",
                    uiOutput("start_UI")
-                  
                    ),
   
   conditionalPanel(condition="input.tsp=='overview'",
@@ -146,7 +145,7 @@ wellPanel(
   conditionalPanel(
     condition="input.tsp=='box'",
     selectInput("oderchoice", label = "Order by", 
-                choices = list("Dataset" = "default", "Mean ratio" = "mean", "p-value" = "pvalue"),
+                choices = list("Dataset" = "default", "Mean ratio" = "mean"),
                 selected = "default"),
     checkboxInput('highlightbox', 'Highlight mean of selected elements'),
     downloadButton("dlCurBoxPlot", "Download Graphic"))
@@ -154,7 +153,7 @@ wellPanel(
 
 
 column(8,tabsetPanel(
-  tabPanel("start",
+  tabPanel("Start",
            htmlOutput("start_hint"),
            value="start"), 
 tabPanel("eden log",

@@ -43,6 +43,9 @@ shinyServer(function(input, output, session) {
 #    toggle(condition = input$cond, selector = "#tsp li a[data-value=annotation]")
 #  })
  
+  ####
+  #### main table 
+  ####
   output$table_filtered <- DT::renderDataTable(
     DT::datatable(dataset, options = list(paging = 25))
   )
@@ -116,7 +119,11 @@ shinyServer(function(input, output, session) {
       df[i,]$pval <- fisher.test(test.mat, alternative = "greater")$p.value
       i <- i + 1 
     }
+    
     df$fdr <- p.adjust(df$pval, method="fdr")
+    df$pval <- NULL
+    df$fdr <- round(df$fdr,digits=6)
+    df$star <- add.significance.stars(df$fdr)
     df
 }))
   
@@ -161,7 +168,9 @@ shinyServer(function(input, output, session) {
   #################
   # Render UI
   #################
-    
+
+  
+      
   # render again if input$player_name changes
   output$filters_UI <- renderUI({
     dataset <- readData(paste(folder.path, input$dataset, sep="/"))
@@ -190,6 +199,20 @@ shinyServer(function(input, output, session) {
   })
   
   # render again if input$player_name changes
+  output$start_UI_samples <- renderUI({
+    if(input$analysistype=="comparative"){
+      conditionalPanel(condition="input.tsp=='start'",
+                       helpText("For a comparative analysis please provide information which samples should be pooled together"),
+                       fileInput('files_samples', 'Upload a sample description file (not required)',
+                                 accept = c(
+                                   '.txt'
+                                 ), multiple=FALSE),
+                       checkboxInput("eden_use_mgm", "find ORFs with MetaGeneMark", FALSE)
+      )}
+  })
+  
+  
+  # render again if input$player_name changes
   output$start_UI <- renderUI({
   if(input$runtype == "newstart"){
     conditionalPanel(condition="input.tsp=='start'",
@@ -203,6 +226,12 @@ shinyServer(function(input, output, session) {
                 '.ffn'
               ), multiple=TRUE),
  #  actionButton('uploadButton',label = "Add files"),
+
+ selectInput("analysistype", label = "Select analysis type", 
+              choices = list("pooled analysis" = "pooled", "comparative analysis" = "comparative"),
+              selected = "pooled analysis"),
+ uiOutput("start_UI_samples"),
+ 
    actionButton('checkButton',label = "Check files"),
    actionButton('goButton',label = "Start analysis"),
    helpText("If the test mode is on, eden runs only on a random subset of gene families"),
@@ -246,7 +275,8 @@ shinyServer(function(input, output, session) {
   # generates a histogram
   doPlotHistogram <- function(dataset, input){
     p <- ggplot(dataset, aes(ratio, fill = sample)) +
-      geom_histogram(bins = input$binSize) + theme_bw()
+      geom_histogram(bins = input$binSize) + theme_classic()
+    p <- p + labs(x = "dN/dS ratio", y="protein families") + ggtitle("Histogram")
     if (input$facet)
       p <- p + facet_grid(sample ~ .)
     
@@ -328,7 +358,6 @@ shinyServer(function(input, output, session) {
     return(p)
   }
   
-  
   doAnnotationplot <- function(data, input){
     require(ggplot2)
     if(input$navalues){
@@ -360,20 +389,28 @@ shinyServer(function(input, output, session) {
     return(p)
   }
   
+  ####
+  #### BOXPLOT TAB
+  ####
+  
   doPlotBox <- function(data, input){
     require(ggplot2)
-  
     if(input$oderchoice == "mean"){
       p <- ggplot(data, aes(x=reorder(sample, ratio),y=ratio))
-    } else {
+    }
+   # if(input$oderchoice == "pvalue"){ 
+  #    p <- ggplot(data, aes(x=reorder(sample, -fdr),y=ratio))
+  #  }
+    if(input$oderchoice == "default") {
       p <- ggplot(data, aes(x=sample,y=ratio))
     }
+    p <- p + ylab("dN/dS ratio") + xlab("sample")
     p <- p + geom_boxplot(fill="grey80", width=0.8) + theme_classic() + coord_flip()
     if (input$highlightbox){
       mark.ratio <- data[input$table_rows_selected,]$ratio
       p <- p + geom_hline(yintercept = mean(mark.ratio, na.rm=T))
     }
-     
+    
     return(p)
   }
   
@@ -426,6 +463,10 @@ shinyServer(function(input, output, session) {
     # else write an error msg that the user have to select some rows
   }, height=700)
   
+  ####
+  #### BOXPLOT TAB
+  ####
+
   # boxplot
   output$plot4 <- renderPlot({
     data <- readData(paste(folder.path, input$dataset, sep="/"))
@@ -567,7 +608,12 @@ shinyServer(function(input, output, session) {
   #################
   # RENDER html
   #################
-  output$log_hint <- renderText({paste("</br><font color=\"#008080\"><b>", "After you start the analysis this area will be updated in will show the current state of your analysis run.</b></font></br></br>")})
+
+
+  output$start_hint <- renderText({paste("</br><font color=\"#008080\"><b>", "Welcome text here</b></font></br></br>")})
+
+    
+    output$log_hint <- renderText({paste("</br><font color=\"#008080\"><b>", "After you start the analysis this area will be updated in will show the current state of your analysis run.</b></font></br></br>")})
   
   # tab 1
   # overview  tab
