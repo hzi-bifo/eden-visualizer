@@ -72,9 +72,12 @@ shinyUI(fluidPage(headerPanel_2(
 conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",
                  uiOutput('filter_example'),
                  helpText("Step 1: choose if you want to start a new eden run or inspect a finished run"),
+            #     selectInput("runtype", label = "", 
+            #                 choices = list("start a new eden analysis" = "newstart", "inspect an finished run" = "previousstart", "upload a eden archive" = "uploadstart"),
+             #                selected = "newstart")
                  selectInput("runtype", label = "", 
-                             choices = list("start a new eden analysis" = "newstart", "inspect an finished run" = "previousstart", "upload a eden archive" = "uploadstart"),
-                             selected = "newstart")
+                             choices = list("inspect an finished run" = "previousstart"),
+                             selected = "previousstart")
                  ),
 
 conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",
