@@ -7,7 +7,7 @@
 options(shiny.maxRequestSize = 50*1024^2)
 
 shinyServer(function(input, output, session) {
-
+  
   # check if dataset is there and only then show the tab panels
   observe({
     toggle(condition = (input$runtype!="newstart"), selector = "#tsp li a[data-value=annotation]")
@@ -27,22 +27,30 @@ shinyServer(function(input, output, session) {
   # Reactive
   #################
   dataset <- reactive({
-      if(input$dataset[1]!=""){
-        readData(paste(folder.path, input$dataset, sep="/"))
-      } else {
+    if(input$dataset[1]!=""){
+      readData(paste(folder.path, input$dataset, sep="/"))
+    } else {
       #  dataset <- NULL
-      }
-     
+    }
   })
+  
+  
+  output$stopmsg <- renderPrint({ 
+    if(input$stopserver){
+      if(file.exists("/home/eden/pid.txt"))
+      system("kill -9 `cat /home/eden/pid.txt`")
+    }
+    })
+  
   
   #################
   # render table functions
   #################
   # check if annoation is provided and only then show the annotation panels
-#  observe({
-#    toggle(condition = input$cond, selector = "#tsp li a[data-value=annotation]")
-#  })
- 
+  #  observe({
+  #    toggle(condition = input$cond, selector = "#tsp li a[data-value=annotation]")
+  #  })
+  
   ####
   #### main table 
   ####
@@ -66,30 +74,30 @@ shinyServer(function(input, output, session) {
       data <- data[which(data$sample == input$samples),]
     }
     
-      df <- NULL
-      df <- data.frame(term=unique(data$term), pval=rep(-1,length(unique(data$term))), elements=rep(0,length(unique(data$term))))
-      df <- df[which(!is.na(df$term)),]
-      i <- 1
-      for(term in df$term){
-        data.term <- data[which(data$term == term),]
-        data.nonterm <- data[which(data$term != term),]
-        test.mat <-
-          matrix(c(sum(data.term$sum_pN), sum(data.term$sum_pS), sum(data.nonterm$sum_pN), sum(data.nonterm$sum_pS)),
-                 nrow = 2,
-                 dimnames =
-                   list(c("background", "selected"),
-                        c("dN", "dS")))
-        df[i,]$pval <- fisher.test(test.mat, alternative = "greater")$p.value
-        df[i,]$elements <- df[i,]$elements  + nrow(data.term)
-        i <- i + 1 
-      }
-      df$fdr <- p.adjust(df$pval, method="fdr")
-      
-      df$fdr <- round(df$fdr,digits=6)
-      df$star <- add.significance.stars(df$fdr)
-      df$pval <- NULL
-      df
-    }))
+    df <- NULL
+    df <- data.frame(term=unique(data$term), pval=rep(-1,length(unique(data$term))), elements=rep(0,length(unique(data$term))))
+    df <- df[which(!is.na(df$term)),]
+    i <- 1
+    for(term in df$term){
+      data.term <- data[which(data$term == term),]
+      data.nonterm <- data[which(data$term != term),]
+      test.mat <-
+        matrix(c(sum(data.term$sum_pN), sum(data.term$sum_pS), sum(data.nonterm$sum_pN), sum(data.nonterm$sum_pS)),
+               nrow = 2,
+               dimnames =
+                 list(c("background", "selected"),
+                      c("dN", "dS")))
+      df[i,]$pval <- fisher.test(test.mat, alternative = "greater")$p.value
+      df[i,]$elements <- df[i,]$elements  + nrow(data.term)
+      i <- i + 1 
+    }
+    df$fdr <- p.adjust(df$pval, method="fdr")
+    
+    df$fdr <- round(df$fdr,digits=6)
+    df$star <- add.significance.stars(df$fdr)
+    df$pval <- NULL
+    df
+  }))
   
   output$table_sample <- DT::renderDataTable(DT::datatable({
     require(pander)
@@ -129,7 +137,7 @@ shinyServer(function(input, output, session) {
     df$fdr <- round(df$fdr,digits=6)
     df$star <- add.significance.stars(df$fdr)
     df
-}))
+  }))
   
   output$table <- DT::renderDataTable(
     DT::datatable(dataset, options = list(pageLength = 25))
@@ -172,16 +180,16 @@ shinyServer(function(input, output, session) {
   #################
   # Render UI
   #################
-
   
-      
+  
+  
   # render again if input$player_name changes
   output$filters_UI <- renderUI({
     dataset <- readData(paste(folder.path, input$dataset, sep="/"))
-#    selectInput("samples", "Choose one or more samples:", 
-#    choices=levels(factor(dataset$sample)), 
-#    selected=c(levels(factor(dataset()$sample))[1:length(unique(data$sample))]), 
-#    multiple=T, width="100%")
+    #    selectInput("samples", "Choose one or more samples:", 
+    #    choices=levels(factor(dataset$sample)), 
+    #    selected=c(levels(factor(dataset()$sample))[1:length(unique(data$sample))]), 
+    #    multiple=T, width="100%")
     selectInput("samples", "Choose one or more samples:", 
                 choices=levels(factor(dataset$sample)), 
                 selected=c(levels(factor(dataset()$sample))[1]), 
@@ -211,69 +219,71 @@ shinyServer(function(input, output, session) {
                                  accept = c(
                                    '.txt'
                                  ), multiple=FALSE)#,
-                    #   checkboxInput("eden_use_mgm", "find ORFs with MetaGeneMark", FALSE)
+                       #   checkboxInput("eden_use_mgm", "find ORFs with MetaGeneMark", FALSE)
       )}
   })
   
   
   # render again if input$player_name changes
   output$start_UI <- renderUI({
-  if(input$runtype == "newstart"){
-    conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",
-    helpText("Step 2: file upload"),
-    fileInput('files_faa', 'select one or more amino acid files (.faa)',
-              accept = c(
-                '.faa'
-              ), multiple=TRUE),
-    fileInput('files_ffn', 'select one or more corresponding nucleotide files (.ffn)',
-              accept = c(
-                '.ffn'
-              ), multiple=TRUE),
-    HTML('<hr>'),
- #  actionButton('uploadButton',label = "Add files"),
- helpText("Step 3: select how the files are processed. If you want to perform a comparative analysis you have to specify which samples are pooled together. "),
- selectInput("analysistype", label = "analysis type", 
-              choices = list("pooled analysis" = "pooled", "comparative analysis" = "comparative"),
-              selected = "pooled analysis"),
- uiOutput("start_UI_samples"),
- HTML('<hr>'),
- 
-   helpText("Step 4: specify name and thresholds"),
-   textInput("eden_run_name", label = "name your analysis run", value = "eden_run_1"),
-   
-   textInput("eden_run_cpus", label = "number of CPUs", value = "4"),
-   sliderInput("eden_run_gap", label = "gap filter", min = 0, 
-               max = 100, value = 80),
- HTML('<hr>'),
-
- helpText("Step 5: start eden"),
- actionButton('checkButton',label = "Prepare files"),
- actionButton('goButton',label = "Start analysis"),
- checkboxInput("eden_test_mode", "test mode", FALSE)
-   #checkboxInput("eden_use_mgm", "find ORFs with MetaGeneMark", FALSE)
-    )}
-   
+    if(input$runtype == "newstart"){
+      conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",
+                       helpText("Step 2: file upload"),
+                       fileInput('files_faa', 'select one or more amino acid files (.faa)',
+                                 accept = c(
+                                   '.faa'
+                                 ), multiple=TRUE),
+                       fileInput('files_ffn', 'select one or more corresponding nucleotide files (.ffn)',
+                                 accept = c(
+                                   '.ffn'
+                                 ), multiple=TRUE),
+                       HTML('<hr>'),
+                       #  actionButton('uploadButton',label = "Add files"),
+                       helpText("Step 3: select how the files are processed. If you want to perform a comparative analysis you have to specify which samples are pooled together. "),
+                       selectInput("analysistype", label = "analysis type", 
+                                   choices = list("pooled analysis" = "pooled", "comparative analysis" = "comparative"),
+                                   selected = "pooled analysis"),
+                       uiOutput("start_UI_samples"),
+                       HTML('<hr>'),
+                       
+                       helpText("Step 4: specify name and thresholds"),
+                       textInput("eden_run_name", label = "name your analysis run", value = "eden_run_1"),
+                       
+                       textInput("eden_run_cpus", label = "number of CPUs", value = "4"),
+                       sliderInput("eden_run_gap", label = "gap filter", min = 0, 
+                                   max = 100, value = 80),
+                       HTML('<hr>'),
+                       
+                       helpText("Step 5: start eden"),
+                       actionButton('checkButton',label = "Prepare files"),
+                       actionButton('goButton',label = "Start analysis"),
+                       checkboxInput("eden_test_mode", "test mode", FALSE)
+                       #checkboxInput("eden_use_mgm", "find ORFs with MetaGeneMark", FALSE)
+      )}
+    
     
   })
   
-#  output$startdown_UI <- renderUI({
-#    if(input$runtype != "newstart"){
-#      conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",#
-#                       helpText("Step 2: select which run to import"),
-#                       selectInput("dataset", "Select run:", 
-#                                   choices= list.dirs(path = "data", 
-#                                                      full.names = FALSE, recursive = FALSE), 
-#                                   selected=list.dirs(path = "csv", full.names = FALSE, 
-#                                                      recursive = FALSE)[1], multiple=F, width="100%"))
-#      }
-#  })
+  #  output$startdown_UI <- renderUI({
+  #    if(input$runtype != "newstart"){
+  #      conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",#
+  #                       helpText("Step 2: select which run to import"),
+  #                       selectInput("dataset", "Select run:", 
+  #                                   choices= list.dirs(path = "data", 
+  #                                                      full.names = FALSE, recursive = FALSE), 
+  #                                   selected=list.dirs(path = "csv", full.names = FALSE, 
+  #                                                      recursive = FALSE)[1], multiple=F, width="100%"))
+  #      }
+  #  })
   
   output$filter_example <- renderUI({
     if(file.exists("/home/eden/eden.sh")){
       conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",#
+                       actionButton("stopserver", label = "stop server"),
                        helpText("This is online"))
     } else {
       conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",#
+                       actionButton("stopserver", label = "stop server"),
                        helpText(h3("EDEN")))
     }
   })
@@ -286,7 +296,7 @@ shinyServer(function(input, output, session) {
     } 
   })
   
- 
+  
   #################
   # ggplot functions
   #################
@@ -419,9 +429,9 @@ shinyServer(function(input, output, session) {
     if(input$oderchoice == "mean"){
       p <- ggplot(data, aes(x=reorder(sample, ratio),y=ratio))
     }
-   # if(input$oderchoice == "pvalue"){ 
-  #    p <- ggplot(data, aes(x=reorder(sample, -fdr),y=ratio))
-  #  }
+    # if(input$oderchoice == "pvalue"){ 
+    #    p <- ggplot(data, aes(x=reorder(sample, -fdr),y=ratio))
+    #  }
     if(input$oderchoice == "default") {
       p <- ggplot(data, aes(x=sample,y=ratio))
     }
@@ -487,7 +497,7 @@ shinyServer(function(input, output, session) {
   ####
   #### BOXPLOT TAB
   ####
-
+  
   # boxplot
   output$plot4 <- renderPlot({
     data <- readData(paste(folder.path, input$dataset, sep="/"))
@@ -513,7 +523,7 @@ shinyServer(function(input, output, session) {
   output$annotationplot <- renderPlot({
     data <- readData(paste(folder.path, input$dataset, sep="/"))
     data <- data[which(data$fdr <= input$pval),]
-  #  data <- data[which(data$sample == input$samples),]
+    #  data <- data[which(data$sample == input$samples),]
     
     if(length(input$samples) > 1){
       subset <- NULL
@@ -551,7 +561,7 @@ shinyServer(function(input, output, session) {
     print(p)
   }, height=400)
   
-
+  
   #################
   # RENDER TEXT
   #################
@@ -585,7 +595,7 @@ shinyServer(function(input, output, session) {
       # perform fisher test 
       cat("\n")
       print(data.selection$name)
-   
+      
       test.mat <-
         matrix(c(sum(data.selection$sum_pN), sum(data.selection$sum_pS), sum(data$sum_pN), sum(data$sum_pS)),
                nrow = 2,
@@ -629,12 +639,12 @@ shinyServer(function(input, output, session) {
   #################
   # RENDER html
   #################
-
-
+  
+  
   output$start_hint_online <- renderText({paste("</br><font color=\"#008080\"><b>", "Welcome text here</b></font></br></br>")})
-
-    
-#    output$log_hint <- renderText({paste("</br><font color=\"#008080\"><b>", "After you start the analysis this area will be updated in will show the current state of your analysis run.</b></font></br></br>")})
+  
+  
+  #    output$log_hint <- renderText({paste("</br><font color=\"#008080\"><b>", "After you start the analysis this area will be updated in will show the current state of your analysis run.</b></font></br></br>")})
   
   # tab 1
   # overview  tab
@@ -645,7 +655,7 @@ shinyServer(function(input, output, session) {
   output$overview_table <- renderText({paste("Table:",num.name, " protein families found in", length(input$samples)," samples with a mean dN/dS ratio of", num.meanratio, " +- ", num.sd, "(SD). Categories based on HMM match with E-value 0.01. Only protein families with a FDR adjusted p-value of less than ", input$pval," are shown. p-value(s) as: one star for value below 0.05, two for 0.01 and three for 0.001. Table generated with EDEN v.1.</br></br>")})
   
   output$overview_fisher <- renderText({paste("Basic statistics and one-sided Fisher's test")})
-
+  
   # tab 2
   # annotation tab
   output$annotation_hint <- renderText({paste("<font color=\"#008080\"><b>", "Hint: You can specify a filter to show protein families that have a significant or high dn/ds ratio. For this use the slider 'p-value threshold' on the widget on the left side.</b></font>")})
@@ -721,7 +731,7 @@ shinyServer(function(input, output, session) {
     }
   )
   
-
+  
   ntextcheck <- eventReactive(input$checkButton, {
     std <- system2("/home/eden/start_check.sh", stdout=TRUE,stderr=TRUE)
   })
@@ -730,25 +740,25 @@ shinyServer(function(input, output, session) {
     std2 <- system2("/home/eden/start_eden.sh", stdout=TRUE,stderr=TRUE)
   })
   
- # # Function to get new log entries
-#  get_new_log <- function(){
-#    data <- read.table(log.path, header=F, sep=";")
-#    colnames(data) <- c("time", "sample", "message")
-#    return(data)
- # }
+  # # Function to get new log entries
+  #  get_new_log <- function(){
+  #    data <- read.table(log.path, header=F, sep=";")
+  #    colnames(data) <- c("time", "sample", "message")
+  #    return(data)
+  # }
   
   # Initialize log
-#  my_log <<- get_new_log()
+  #  my_log <<- get_new_log()
   
   # Function to update my_data
- # update_log <- function(){
- #   my_log <<- get_new_log()
- # }
+  # update_log <- function(){
+  #   my_log <<- get_new_log()
+  # }
   
   #output$log = renderTable({
- #   invalidateLater(millis=5000, session)
+  #   invalidateLater(millis=5000, session)
   #  update_log()
-#  })
+  #  })
   
   output$nTextupload <- renderText({
     ntextupload()
@@ -763,7 +773,7 @@ shinyServer(function(input, output, session) {
     ntexteden()
   })
   
-
+  
   output$filetable_faa<- reactiveTable(function() {
     if (is.null(input$files_faa)) {
       # User has not uploaded a file yet
@@ -778,10 +788,10 @@ shinyServer(function(input, output, session) {
       cmd <- paste("mv ",infiles_faa$datapath[i]," ", infiles_faa$dest[i], sep="")
       err <- system(cmd,  intern = TRUE)
     }
-   # system2("echo",paste('";;faa files added" >> ',log.path, sep=""))
+    # system2("echo",paste('";;faa files added" >> ',log.path, sep=""))
     input$files_faa
   })
-
+  
   # move input sample.txt file and show table  
   output$filetable_sample <- reactiveTable(function() {
     if (is.null(input$file_sample)) {
@@ -791,10 +801,10 @@ shinyServer(function(input, output, session) {
     infiles_sample <- as.data.frame(input$file_sample)
     cmd <- paste("mv ",infiles_sample$datapath[1], sample.path, sep="")
     err <- system(cmd,  intern = TRUE)
-  #  system2("echo",paste('";;sample file added" >> ',log.path, sep=""))
+    #  system2("echo",paste('";;sample file added" >> ',log.path, sep=""))
     input$file_sample
   })
-
+  
   output$filetable_ffn<- reactiveTable(function() {
     if (is.null(input$files_ffn)) {
       # User has not uploaded a file yet
@@ -810,12 +820,12 @@ shinyServer(function(input, output, session) {
       err <- system(cmd,  intern = TRUE)
     }
     out <- paste(err)
- #   system2("echo",paste('";;ffn files added" >> ',log.path, sep=""))
+    #   system2("echo",paste('";;ffn files added" >> ',log.path, sep=""))
     input$files_ffn
   })
   
   ##### log
   ##### 
-
+  
   
 })
