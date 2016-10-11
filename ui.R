@@ -113,7 +113,14 @@ conditionalPanel(
 
 wellPanel(
   conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",
-                   uiOutput("start_UI")
+                   uiOutput("start_UI"),
+                   conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",#
+                                    helpText("Step 2: select which run to import"),
+                                    selectInput("dataset", "Select run:", 
+                                                choices= list.dirs(path = "data", 
+                                                                   full.names = FALSE, recursive = FALSE), 
+                                                selected=list.dirs(path = "csv", full.names = FALSE, 
+                                                                   recursive = FALSE)[1], multiple=F, width="100%"))
                    ),
   
   conditionalPanel(condition="input.tsp=='overview'",
@@ -162,17 +169,17 @@ column(8,tabsetPanel(
   tabPanel("Start",
            htmlOutput("start_hint"),
            value="start"), 
-tabPanel("eden log",
-         htmlOutput("log_hint"),
-         tableOutput("filetable_faa"),
-         tableOutput("filetable_ffn"), 
-         tableOutput("filetable_sample"), 
-         tableOutput("log"),
+#tabPanel("eden log",
+#         htmlOutput("log_hint"),
+#         tableOutput("filetable_faa"),
+#         tableOutput("filetable_ffn"), 
+#         tableOutput("filetable_sample"), 
+#      #   tableOutput("log"),
   #       htmlOutput("nTextupload"), 
-  htmlOutput("nTexteden"),       
-  htmlOutput("nTextcheck"), 
+#  htmlOutput("nTexteden"),       
+#  htmlOutput("nTextcheck"), 
         
-         value="log"), 
+ #        value="log"), 
   
 tabPanel("Overview",htmlOutput("overview_hint"),
          div(DT::dataTableOutput("table"),style = "font-size:80%"), 

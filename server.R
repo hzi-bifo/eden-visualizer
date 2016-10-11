@@ -256,17 +256,17 @@ shinyServer(function(input, output, session) {
     
   })
   
-  output$startdown_UI <- renderUI({
-    if(input$runtype != "newstart"){
-      conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",#
-                       helpText("Step 2: select which run to import"),
-                       selectInput("dataset", "Select run:", 
-                                   choices= list.dirs(path = "data", 
-                                                      full.names = FALSE, recursive = FALSE), 
-                                   selected=list.dirs(path = "csv", full.names = FALSE, 
-                                                      recursive = FALSE)[1], multiple=F, width="100%"))
-      }
-  })
+#  output$startdown_UI <- renderUI({
+#    if(input$runtype != "newstart"){
+#      conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",#
+#                       helpText("Step 2: select which run to import"),
+#                       selectInput("dataset", "Select run:", 
+#                                   choices= list.dirs(path = "data", 
+#                                                      full.names = FALSE, recursive = FALSE), 
+#                                   selected=list.dirs(path = "csv", full.names = FALSE, 
+#                                                      recursive = FALSE)[1], multiple=F, width="100%"))
+#      }
+#  })
   
   output$filter_example <- renderUI({
     if(file.exists("/home/eden/eden.sh")){
@@ -274,7 +274,7 @@ shinyServer(function(input, output, session) {
                        helpText("This is online"))
     } else {
       conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",#
-                       helpText(h3("eden example: please select 'inspect a finished run'")))
+                       helpText(h3("EDEN")))
     }
   })
   
@@ -634,7 +634,7 @@ shinyServer(function(input, output, session) {
   output$start_hint_online <- renderText({paste("</br><font color=\"#008080\"><b>", "Welcome text here</b></font></br></br>")})
 
     
-    output$log_hint <- renderText({paste("</br><font color=\"#008080\"><b>", "After you start the analysis this area will be updated in will show the current state of your analysis run.</b></font></br></br>")})
+#    output$log_hint <- renderText({paste("</br><font color=\"#008080\"><b>", "After you start the analysis this area will be updated in will show the current state of your analysis run.</b></font></br></br>")})
   
   # tab 1
   # overview  tab
@@ -730,25 +730,25 @@ shinyServer(function(input, output, session) {
     std2 <- system2("/home/eden/start_eden.sh", stdout=TRUE,stderr=TRUE)
   })
   
-  # Function to get new log entries
-  get_new_log <- function(){
-    data <- read.table(log.path, header=F, sep=";")
-    colnames(data) <- c("time", "sample", "message")
-    return(data)
-  }
+ # # Function to get new log entries
+#  get_new_log <- function(){
+#    data <- read.table(log.path, header=F, sep=";")
+#    colnames(data) <- c("time", "sample", "message")
+#    return(data)
+ # }
   
   # Initialize log
-  my_log <<- get_new_log()
+#  my_log <<- get_new_log()
   
   # Function to update my_data
-  update_log <- function(){
-    my_log <<- get_new_log()
-  }
+ # update_log <- function(){
+ #   my_log <<- get_new_log()
+ # }
   
-  output$log = renderTable({
-    invalidateLater(millis=5000, session)
-    update_log()
-  })
+  #output$log = renderTable({
+ #   invalidateLater(millis=5000, session)
+  #  update_log()
+#  })
   
   output$nTextupload <- renderText({
     ntextupload()
@@ -778,7 +778,7 @@ shinyServer(function(input, output, session) {
       cmd <- paste("mv ",infiles_faa$datapath[i]," ", infiles_faa$dest[i], sep="")
       err <- system(cmd,  intern = TRUE)
     }
-    system2("echo",paste('";;faa files added" >> ',log.path, sep=""))
+   # system2("echo",paste('";;faa files added" >> ',log.path, sep=""))
     input$files_faa
   })
 
@@ -791,7 +791,7 @@ shinyServer(function(input, output, session) {
     infiles_sample <- as.data.frame(input$file_sample)
     cmd <- paste("mv ",infiles_sample$datapath[1], sample.path, sep="")
     err <- system(cmd,  intern = TRUE)
-    system2("echo",paste('";;sample file added" >> ',log.path, sep=""))
+  #  system2("echo",paste('";;sample file added" >> ',log.path, sep=""))
     input$file_sample
   })
 
@@ -810,7 +810,7 @@ shinyServer(function(input, output, session) {
       err <- system(cmd,  intern = TRUE)
     }
     out <- paste(err)
-    system2("echo",paste('";;ffn files added" >> ',log.path, sep=""))
+ #   system2("echo",paste('";;ffn files added" >> ',log.path, sep=""))
     input$files_ffn
   })
   
