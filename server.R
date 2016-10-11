@@ -244,22 +244,22 @@ shinyServer(function(input, output, session) {
    textInput("eden_run_cpus", label = "number of CPUs", value = "4"),
    sliderInput("eden_run_gap", label = "gap filter", min = 0, 
                max = 100, value = 80),
- helpText("If the test mode is on, eden runs only on a random subset of gene families"),
  HTML('<hr>'),
 
- helpText("Step 5: click start"),
-
- actionButton('checkButton',label = "Check files"),
+ helpText("Step 5: start eden"),
+ actionButton('checkButton',label = "Prepare files"),
  actionButton('goButton',label = "Start analysis"),
  checkboxInput("eden_test_mode", "test mode", FALSE)
    #checkboxInput("eden_use_mgm", "find ORFs with MetaGeneMark", FALSE)
-  )}
+    )}
+   
+    
   })
   
   output$startdown_UI <- renderUI({
     if(input$runtype != "newstart"){
       conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",#
-                       helpText("You can also select an previous eden run from the dropdown list"),
+                       helpText("Step 2: select which run to import"),
                        selectInput("dataset", "Select run:", 
                                    choices= list.dirs(path = "data", 
                                                       full.names = FALSE, recursive = FALSE), 
@@ -268,6 +268,15 @@ shinyServer(function(input, output, session) {
       }
   })
   
+  output$filter_example <- renderUI({
+    if(file.exists("/home/eden/eden.sh")){
+      conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",#
+                       helpText("This is online"))
+    } else {
+      conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",#
+                       helpText(h3("eden example: please select 'inspect a finished run'")))
+    }
+  })
   
   
   # render again if input$dofiltering changes
@@ -622,7 +631,7 @@ shinyServer(function(input, output, session) {
   #################
 
 
-  output$start_hint <- renderText({paste("</br><font color=\"#008080\"><b>", "Welcome text here</b></font></br></br>")})
+  output$start_hint_online <- renderText({paste("</br><font color=\"#008080\"><b>", "Welcome text here</b></font></br></br>")})
 
     
     output$log_hint <- renderText({paste("</br><font color=\"#008080\"><b>", "After you start the analysis this area will be updated in will show the current state of your analysis run.</b></font></br></br>")})
@@ -724,6 +733,7 @@ shinyServer(function(input, output, session) {
   # Function to get new log entries
   get_new_log <- function(){
     data <- read.table(log.path, header=F, sep=";")
+    colnames(data) <- c("time", "sample", "message")
     return(data)
   }
   

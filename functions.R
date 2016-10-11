@@ -3,8 +3,24 @@
 # by Philipp C. Münch (pmu15@helmholtz-hzi.de)
 ################################################################################
 
+# moving input data files
+movingInput <- function(input){
+    print("moving files")
+  # 
+  #lst <- list()
+  #  for(i in 1:length(input$files[,1])){
+  #    print(paste("read ", i))
+  #    lst[[i]] <- readFASTA(input$files[[i, 'datapath']], checkComments=TRUE, strip.descs=TRUE)
+  #  }
+  
+  #  lst <- lapply(lst, function(x) xtable(x))}})
+} 
+
+
+
 # untar file
 unTar <- function(path,out){
+  print("unpack files")
   tars <- list.files(path = path, full.names = FALSE, recursive = FALSE)
   for(i in 1:length(tars)){
     dir.create(paste(out,"/", tars[i], sep=""))
@@ -22,6 +38,7 @@ unTar <- function(path,out){
 # iterate over input data and generate mat
 readData <- function(path.summary){
   require(reshape2)
+  print("read files")
   file.names <- paste(path.summary, dir(path.summary, pattern =".csv"), sep="/")
   sample.names <- colsplit(string=dir(path.summary, pattern =".csv"), pattern=".csv", names=c("name", "ending"))$name
   mat <- NULL

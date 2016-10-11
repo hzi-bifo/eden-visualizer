@@ -70,9 +70,10 @@ shinyUI(fluidPage(headerPanel_2(
 
 # ----------- table panel
 conditionalPanel(condition="input.tsp=='start' || input.tsp=='log'",
+                 uiOutput('filter_example'),
                  helpText("Step 1: choose if you want to start a new eden run or inspect a finished run"),
                  selectInput("runtype", label = "", 
-                             choices = list("start a new eden analysis" = "newstart", "inspect an finished run" = "previousstart"),
+                             choices = list("start a new eden analysis" = "newstart", "inspect an finished run" = "previousstart", "upload a eden archive" = "uploadstart"),
                              selected = "newstart")
                  ),
 
@@ -86,7 +87,7 @@ input.tsp=='annotation' ||
   input.tsp=='histogram' || 
   input.tsp=='box' ||
   input.tsp=='categories' ",
-  helpText("Please select the analysis you want to import."),
+  helpText("Step 3: Add or remove samples from the analysis"),
 
   
   uiOutput('filters_UI'),

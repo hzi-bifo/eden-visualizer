@@ -1,1 +1,1 @@
-eden.version <<- "0.0.7"
+eden.version <<- "0.0.92"

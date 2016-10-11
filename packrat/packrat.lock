@@ -12,12 +12,6 @@ Source: Bioconductor
 Version: 0.14.0
 Hash: 995043698526ca8aa30f40cf17d9ca85
 
-Package: Biostrings
-Source: Bioconductor
-Version: 2.36.4
-Hash: 41ea8910886a047c131c77504c1f6d84
-Requires: BiocGenerics, IRanges, S4Vectors, XVector, zlibbioc
-
 Package: DT
 Source: CRAN
 Version: 0.2
@@ -38,7 +32,6 @@ Hash: 0650d5701aa7e369e77c9e2c8e1dc913
 Package: PKI
 Source: CRAN
 Version: 0.1-3
-Hash: aca3e459c659b6d8266538520f72ba19
 Requires: base64enc
 
 Package: R6
@@ -54,13 +47,11 @@ Hash: c0d56cd15034f395874c870141870c25
 Package: RCurl
 Source: CRAN
 Version: 1.95-4.8
-Hash: 79c7d5a8684e44e0e3426d3093aa7d90
 Requires: bitops
 
 Package: RJSONIO
 Source: CRAN
 Version: 1.3-0
-Hash: fb672e20eb6f3010a3639f855d8ef6de
 
 Package: Rcpp
 Source: CRAN
@@ -87,13 +78,6 @@ Hash: c590d29e555926af053055e23ee79efb
 Package: bitops
 Source: CRAN
 Version: 1.0-6
-Hash: 67d0775189fd0041d95abca618c5c07e
-
-Package: caTools
-Source: CRAN
-Version: 1.17.1
-Hash: 97cb6f6293cd18d17df77a6383cc6763
-Requires: bitops
 
 Package: colorspace
 Source: CRAN
@@ -199,6 +183,12 @@ Source: CRAN
 Version: 0.5
 Hash: 463550cf44fb6f0a2359368f42eebe62
 
+Package: miniUI
+Source: CRAN
+Version: 0.1.1
+Hash: e85626581f80b1fe6c92a96ec348efc5
+Requires: htmltools, shiny
+
 Package: munsell
 Source: CRAN
 Version: 0.4.3
@@ -230,10 +220,6 @@ Source: CRAN
 Version: 1.8.4
 Hash: 96866957d40732d935f717727d5c80ba
 Requires: Rcpp
-
-Package: rJava
-Source: CRAN
-Version: 0.9-8
 
 Package: reshape2
 Source: CRAN
@@ -268,6 +254,12 @@ Version: 0.13.2
 Hash: 28d6903a44dc53bd4823fa43ccdc08e5
 Requires: R6, digest, htmltools, httpuv, jsonlite, mime, xtable
 
+Package: shinyjs
+Source: CRAN
+Version: 0.7
+Hash: e4833b2ba2d8c8773d7b1200699bb434
+Requires: digest, htmltools, miniUI, shiny
+
 Package: stringi
 Source: CRAN
 Version: 1.1.1
@@ -278,12 +270,6 @@ Source: CRAN
 Version: 1.0.0
 Hash: 2676dd5f88890910962b733b0f9540e1
 Requires: magrittr, stringi
-
-Package: venneuler
-Source: CRAN
-Version: 1.1-0
-Hash: c1a4fa76085e34423345a09241b2df03
-Requires: rJava
 
 Package: whisker
 Source: CRAN
